@@ -1,47 +1,30 @@
-<laravel-boost-guidelines>
-# Laravel Application
+# Panduan Kerja — Backend SIDESA
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+API Laravel 13 untuk Sistem Informasi Desa Terpadu. Kebutuhan mengikat ada pada
+`../docs/SRS-Website-Desa.md`; pemetaan ke kode ada pada `../docs/KETERTELUSURAN.md`.
 
-## Prerequisites
+## Konvensi
 
-Verify that PHP and Composer are available:
+- **Bahasa.** Nama domain, komentar, dan pesan ke pengguna ditulis dalam bahasa
+  Indonesia. Nama kerangka kerja (controller, middleware, request) tetap Inggris.
+- **Aturan bisnis** tinggal di `app/Services`, bukan di controller. Controller
+  hanya memvalidasi masukan, memanggil layanan, lalu membentuk respons.
+- **Setiap aksi tulis** dicatat melalui `App\Services\AuditLogger`.
+- **Otorisasi** selalu ditegakkan di sisi server lewat middleware `izin:<kode>`.
+  Menyembunyikan menu di antarmuka tidak pernah dianggap memadai.
+- **Data pribadi** (NIK, kontak pelapor) disimpan terenkripsi; pencarian memakai
+  kolom hash terpisah. Jangan menambah kolom data pribadi tanpa pola yang sama.
+- **Respons daftar berhalaman** memakai bentuk seragam: kunci `data` beserta
+  `current_page`, `last_page`, `per_page`, `total` di tingkat atas. Resource baru
+  yang dipakai untuk daftar wajib memakai trait `KoleksiSeragam`.
 
-```sh
-php -v
-composer -V
+## Sebelum menyerahkan perubahan
+
+```bash
+./vendor/bin/pint            # gaya kode
+./vendor/bin/phpunit         # seluruh uji harus lulus
 ```
 
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
-
-macOS:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
-
-Windows PowerShell:
-
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
-
-Linux:
-
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
-
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+Perubahan pada alur permohonan, aturan bisnis, atau hak akses wajib disertai uji
+yang membuktikannya. Bila menambah kebutuhan baru, perbarui pula matriks
+ketertelusuran.
