@@ -14,6 +14,7 @@ use App\Services\SuratService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Antrean kerja petugas dan alur persetujuan permohonan
@@ -172,6 +173,52 @@ class PermohonanController extends Controller
             ),
             'rata_kepuasan' => round((float) $permohonan->whereNotNull('kepuasan')->avg('kepuasan'), 2),
         ]);
+    }
+
+    /**
+     * Ekspor rekapitulasi layanan untuk pelaporan (REQ-F-ADM-009).
+     * Kolom identitas sengaja dibatasi agar berkas laporan tidak menjadi
+     * salinan data pribadi yang beredar bebas (REQ-NF-CMP-002).
+     */
+    public function eksporCsv(Request $request): StreamedResponse
+    {
+        $dari = $request->date('dari') ?? now()->startOfMonth();
+        $sampai = $request->date('sampai') ?? now()->endOfMonth();
+
+        $permohonan = Permohonan::with('jenisLayanan', 'pemohon', 'surat')
+            ->whereBetween('created_at', [$dari, $sampai])
+            ->orderBy('created_at')
+            ->get();
+
+        $nama = 'laporan-layanan-'.$dari->format('Ymd').'-'.$sampai->format('Ymd').'.csv';
+
+        return response()->streamDownload(function () use ($permohonan) {
+            $keluaran = fopen('php://output', 'wb');
+
+            fputcsv($keluaran, [
+                'nomor_tiket', 'jenis_layanan', 'pemohon', 'kanal', 'status',
+                'diajukan_pada', 'selesai_pada', 'tenggat_sla', 'melampaui_sla',
+                'nomor_surat', 'kepuasan',
+            ]);
+
+            foreach ($permohonan as $baris) {
+                fputcsv($keluaran, [
+                    $baris->nomor_tiket,
+                    $baris->jenisLayanan->nama,
+                    $baris->pemohon?->name,
+                    $baris->kanal,
+                    $baris->status,
+                    $baris->diajukan_pada?->format('Y-m-d H:i'),
+                    $baris->selesai_pada?->format('Y-m-d H:i'),
+                    $baris->tenggat_sla?->format('Y-m-d H:i'),
+                    $baris->melampauiSla() ? 'ya' : 'tidak',
+                    $baris->surat?->nomor_surat,
+                    $baris->kepuasan,
+                ]);
+            }
+
+            fclose($keluaran);
+        }, $nama, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     private function hasil(Permohonan $permohonan, string $pesan): JsonResponse

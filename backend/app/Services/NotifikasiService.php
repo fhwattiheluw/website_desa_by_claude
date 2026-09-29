@@ -140,6 +140,8 @@ class NotifikasiService
             'permohonan_dikembalikan' => 'Permohonan perlu diperbaiki',
             'permohonan_ditolak' => 'Permohonan tidak dapat diproses',
             'permohonan_selesai' => 'Surat Anda telah selesai',
+            'pemulihan_kata_sandi' => 'Pemulihan kata sandi akun desa',
+            'verifikasi_surel' => 'Verifikasi alamat surel Anda',
             'pengaduan_diterima' => 'Pengaduan Anda telah diterima',
             'pengaduan_ditanggapi' => 'Pengaduan Anda telah ditanggapi',
             default => 'Pemberitahuan layanan desa',
@@ -156,6 +158,11 @@ class NotifikasiService
             'permohonan_dikembalikan' => "Permohonan {$data['nomor_tiket']} perlu diperbaiki. Alasan: {$data['alasan']}",
             'permohonan_ditolak' => "Permohonan {$data['nomor_tiket']} tidak dapat diproses. Alasan: {$data['alasan']}",
             'permohonan_selesai' => "Surat untuk permohonan {$data['nomor_tiket']} telah selesai dan dapat diunduh melalui akun Anda.",
+            'pemulihan_kata_sandi' => "Kami menerima permintaan pemulihan kata sandi untuk akun Anda.\n\n"
+                ."Buka tautan berikut untuk membuat kata sandi baru (berlaku {$data['berlaku_menit']} menit):\n{$data['tautan']}\n\n"
+                .'Abaikan pesan ini bila Anda tidak merasa mengajukan permintaan tersebut.',
+            'verifikasi_surel' => 'Silakan verifikasi alamat surel Anda dengan membuka tautan berikut '
+                ."(berlaku {$data['berlaku_jam']} jam):\n{$data['tautan']}",
             default => 'Terdapat pembaruan pada layanan yang Anda ajukan.',
         };
 

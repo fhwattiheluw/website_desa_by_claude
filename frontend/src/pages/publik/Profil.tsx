@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api, pesanGalat } from '@/lib/api'
 import { useProfilDesa } from '@/lib/kueri'
+import { useMeta } from '@/lib/meta'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
 
@@ -17,6 +18,11 @@ export function Profil() {
   const { data: lembaga } = useQuery({
     queryKey: ['lembaga'],
     queryFn: async () => (await api.get<{ data: Lembaga[] }>('/lembaga')).data.data,
+  })
+
+  useMeta({
+    judul: desa?.nama_desa ? `Profil Desa ${desa.nama_desa}` : 'Profil Desa',
+    deskripsi: 'Sejarah, visi dan misi, letak wilayah, struktur pemerintahan, serta lembaga kemasyarakatan desa.',
   })
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />

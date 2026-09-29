@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BadgeCheck, ShieldAlert } from 'lucide-react'
 import { api } from '@/lib/api'
 import { tanggal } from '@/lib/format'
+import { useMeta } from '@/lib/meta'
 import { Kartu, IsiKartu } from '@/components/ui/Kartu'
 import { Isian } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
@@ -25,6 +26,11 @@ export function VerifikasiSurat() {
   const { kode: kodeParam } = useParams()
   const [kode, setKode] = useState(kodeParam ?? '')
   const [dicari, setDicari] = useState(kodeParam ?? '')
+
+  useMeta({
+    judul: 'Verifikasi Keabsahan Surat',
+    deskripsi: 'Periksa keaslian surat terbitan pemerintah desa menggunakan kode verifikasi atau kode QR.',
+  })
 
   const { data, isFetching, error } = useQuery({
     queryKey: ['verifikasi-surat', dicari],

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useDaftarKonten, useKategori } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
 import { tanggal, tanggalRelatif } from '@/lib/format'
+import { useMeta } from '@/lib/meta'
 import { Kartu } from '@/components/ui/Kartu'
 import { Lencana } from '@/components/ui/Lencana'
 import { Paginasi } from '@/components/ui/Paginasi'
@@ -23,6 +24,8 @@ export function DaftarKonten({ tipe }: { tipe: TipeKonten }) {
   const { data: daftarKategori } = useKategori()
 
   const info = JUDUL[tipe]
+
+  useMeta({ judul: info.judul, deskripsi: info.deskripsi })
 
   return (
     <div className="space-y-6">

@@ -3,6 +3,7 @@ import { Download, FileDown } from 'lucide-react'
 import { useApbdes, useTahunApbdes } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
 import { rupiah, tanggal } from '@/lib/format'
+import { useMeta } from '@/lib/meta'
 import { GrafikBatang, WARNA_SERI } from '@/components/chart/GrafikBatang'
 import { Kartu, KartuStatistik, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { GalatMuat, KondisiKosong, Pemuat } from '@/components/ui/Status'
@@ -16,6 +17,12 @@ export function Apbdes() {
   const tahun = tahunDipilih ?? daftarTahun?.[0]?.tahun
 
   const { data, isPending, error } = useApbdes(tahun)
+
+  useMeta({
+    judul: tahun ? `Transparansi APBDes ${tahun}` : 'Transparansi APBDes',
+    deskripsi:
+      'Rincian pendapatan, belanja, dan realisasi Anggaran Pendapatan dan Belanja Desa beserta dokumen resminya.',
+  })
 
   if (memuatTahun) return <Pemuat />
 

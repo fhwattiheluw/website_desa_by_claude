@@ -1,6 +1,7 @@
 import { useStatistik } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
 import { angka, judulKan } from '@/lib/format'
+import { useMeta } from '@/lib/meta'
 import { GrafikBatang, WARNA_TUNGGAL } from '@/components/chart/GrafikBatang'
 import { BatangProporsi } from '@/components/chart/BatangProporsi'
 import { Kartu, KartuStatistik, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
@@ -16,6 +17,11 @@ const JUDUL_KELOMPOK: Record<string, string> = {
 
 export function Statistik() {
   const { data, isPending, error } = useStatistik()
+
+  useMeta({
+    judul: 'Statistik Desa',
+    deskripsi: 'Data agregat kependudukan desa menurut usia, pendidikan, pekerjaan, agama, dan wilayah dusun.',
+  })
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
   if (isPending || !data) return <Pemuat />

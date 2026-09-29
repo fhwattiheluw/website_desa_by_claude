@@ -3,6 +3,7 @@ import { ArrowRight, CalendarDays, FileText, Megaphone, Users } from 'lucide-rea
 import { useBeranda } from '@/lib/kueri'
 import { angka, tanggal, tanggalRelatif } from '@/lib/format'
 import { pesanGalat } from '@/lib/api'
+import { useMeta } from '@/lib/meta'
 import { Kartu, KartuStatistik } from '@/components/ui/Kartu'
 import { TautanTombol } from '@/components/ui/Tombol'
 import { GalatMuat, Rangka } from '@/components/ui/Status'
@@ -30,9 +31,16 @@ const TAUTAN_CEPAT = [
 export function Beranda() {
   const { data, isPending, error } = useBeranda<DataBeranda>()
 
-  if (error) return <GalatMuat pesan={pesanGalat(error)} />
-
   const desa = data?.desa ?? {}
+
+  useMeta({
+    judul: desa.nama_desa ? `Desa ${desa.nama_desa}` : 'Portal Desa',
+    deskripsi:
+      desa.tagline ??
+      'Portal resmi pemerintah desa: informasi, transparansi anggaran, layanan administrasi daring, dan pengaduan masyarakat.',
+  })
+
+  if (error) return <GalatMuat pesan={pesanGalat(error)} />
 
   return (
     <div className="space-y-10">

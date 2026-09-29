@@ -10,6 +10,7 @@ import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
 import { LencanaPengaduan } from '@/components/ui/Lencana'
 import { useAuth } from '@/lib/auth'
+import { useMeta } from '@/lib/meta'
 
 interface HasilKirim {
   pesan: string
@@ -24,6 +25,11 @@ export function Pengaduan() {
   const [hasil, setHasil] = useState<HasilKirim | null>(null)
   const [galat, setGalat] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
+
+  useMeta({
+    judul: 'Pengaduan dan Aspirasi Masyarakat',
+    deskripsi: 'Sampaikan laporan, keluhan, atau usulan kepada pemerintah desa dan pantau tindak lanjutnya.',
+  })
 
   const { data: kategori } = useQuery({
     queryKey: ['kategori-pengaduan'],

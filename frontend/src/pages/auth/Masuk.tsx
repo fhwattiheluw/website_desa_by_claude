@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '@/lib/auth'
 import { pesanGalat } from '@/lib/api'
+import { useMeta } from '@/lib/meta'
 import { Kartu, IsiKartu } from '@/components/ui/Kartu'
 import { Isian } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
@@ -15,6 +16,14 @@ export function Masuk() {
   const [password, setPassword] = useState('')
   const [galat, setGalat] = useState('')
   const [memuat, setMemuat] = useState(false)
+
+  const [parameter] = useSearchParams()
+  const statusVerifikasi = parameter.get('verifikasi')
+
+  useMeta({
+    judul: 'Masuk ke Akun',
+    deskripsi: 'Masuk ke akun warga atau akun petugas untuk mengakses layanan administrasi desa.',
+  })
 
   const tujuan = (lokasi.state as { dari?: string } | null)?.dari
 
@@ -48,6 +57,23 @@ export function Masuk() {
         <p className="mt-1 text-slate-600">Gunakan akun warga atau akun petugas desa Anda.</p>
       </header>
 
+      {statusVerifikasi === 'berhasil' && (
+        <div className="mb-4">
+          <Pemberitahuan jenis="sukses" judul="Surel terverifikasi">
+            Terima kasih, alamat surel Anda telah terbukti. Silakan masuk. Kewenangan mengajukan layanan tetap
+            menunggu verifikasi NIK oleh petugas desa.
+          </Pemberitahuan>
+        </div>
+      )}
+
+      {statusVerifikasi === 'gagal' && (
+        <div className="mb-4">
+          <Pemberitahuan jenis="peringatan" judul="Verifikasi gagal">
+            Tautan verifikasi tidak berlaku atau sudah kedaluwarsa. Anda dapat meminta tautan baru dari halaman ini.
+          </Pemberitahuan>
+        </div>
+      )}
+
       <Kartu>
         <IsiKartu>
           {galat && (
@@ -78,7 +104,13 @@ export function Masuk() {
             </Tombol>
           </form>
 
-          <p className="mt-5 text-center text-sm text-slate-600">
+          <p className="mt-4 text-center text-sm">
+            <Link to="/lupa-kata-sandi" className="font-medium text-desa-700 hover:underline">
+              Lupa kata sandi?
+            </Link>
+          </p>
+
+          <p className="mt-3 text-center text-sm text-slate-600">
             Belum punya akun?{' '}
             <Link to="/daftar" className="font-medium text-desa-700 hover:underline">
               Daftar sebagai warga

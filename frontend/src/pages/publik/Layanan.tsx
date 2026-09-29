@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { CheckCircle2, Clock, FileText, Wallet } from 'lucide-react'
 import { useLayanan } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
+import { useMeta } from '@/lib/meta'
 import { Kartu } from '@/components/ui/Kartu'
 import { GalatMuat, Rangka } from '@/components/ui/Status'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
@@ -9,6 +10,12 @@ import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
 /** REQ-F-SRT-001: katalog layanan lengkap dengan persyaratan, biaya, dan SLA. */
 export function Layanan() {
   const { data, isPending, error } = useLayanan()
+
+  useMeta({
+    judul: 'Layanan Administrasi Desa',
+    deskripsi:
+      'Katalog layanan surat desa beserta persyaratan, waktu penyelesaian, dan cara pengajuan daring tanpa biaya.',
+  })
 
   return (
     <div className="space-y-6">

@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\KataSandiController;
 use App\Http\Controllers\Api\Publik;
+use App\Http\Controllers\Api\VerifikasiSurelController;
 use App\Http\Controllers\Api\Warga;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +66,14 @@ Route::prefix('v1')->group(function () {
     Route::post('auth/daftar', [AuthController::class, 'daftar'])->middleware('throttle:registrasi');
     Route::post('auth/masuk', [AuthController::class, 'masuk'])->middleware('throttle:masuk');
 
+    // Pemulihan kata sandi dan verifikasi kepemilikan surel (REQ-F-USR-002, 006).
+    Route::post('auth/lupa-kata-sandi', [KataSandiController::class, 'kirimTautan'])->middleware('throttle:pemulihan');
+    Route::post('auth/atur-ulang-kata-sandi', [KataSandiController::class, 'aturUlang'])->middleware('throttle:pemulihan');
+    Route::post('auth/kirim-ulang-verifikasi', [VerifikasiSurelController::class, 'kirimUlang'])->middleware('throttle:pemulihan');
+    Route::get('auth/verifikasi-surel/{pengguna}/{sidik}', [VerifikasiSurelController::class, 'verifikasi'])
+        ->name('verifikasi.surel')
+        ->middleware('signed');
+
     // Unduhan surat memakai tautan bertanda tangan berbatas waktu (REQ-F-SRT-018).
     Route::get('surat/{surat}/unduh', [Warga\PermohonanController::class, 'unduh'])
         ->name('surat.unduh')
@@ -80,6 +90,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [Warga\PermohonanController::class, 'index']);
             Route::post('/', [Warga\PermohonanController::class, 'store'])->middleware('throttle:unggah');
             Route::get('{permohonan}', [Warga\PermohonanController::class, 'show']);
+            Route::put('{permohonan}/draf', [Warga\PermohonanController::class, 'simpanDraf']);
             Route::post('{permohonan}/kirim-ulang', [Warga\PermohonanController::class, 'kirimUlang']);
             Route::get('{permohonan}/tautan-surat', [Warga\PermohonanController::class, 'tautanSurat']);
             Route::post('{permohonan}/penilaian', [Warga\PermohonanController::class, 'nilai']);
@@ -94,6 +105,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('permohonan')->group(function () {
             Route::get('/', [Admin\PermohonanController::class, 'index'])->middleware('izin:permohonan.lihat');
             Route::get('laporan', [Admin\PermohonanController::class, 'laporan'])->middleware('izin:laporan.lihat');
+            Route::get('laporan/csv', [Admin\PermohonanController::class, 'eksporCsv'])->middleware('izin:laporan.lihat');
             Route::post('loket', [Admin\PermohonanController::class, 'buatkan'])->middleware('izin:permohonan.buat_loket');
             Route::get('{permohonan}', [Admin\PermohonanController::class, 'show'])->middleware('izin:permohonan.lihat');
             Route::post('{permohonan}/verifikasi', [Admin\PermohonanController::class, 'verifikasi'])->middleware('izin:permohonan.verifikasi');

@@ -81,6 +81,27 @@ export function pesanGalat(galat: unknown): string {
   }
 }
 
+/**
+ * Mengunduh berkas dari titik akhir yang memerlukan autentikasi.
+ *
+ * Tautan biasa tidak menyertakan token, sehingga berkas diambil melalui klien
+ * API lalu diserahkan ke peramban sebagai unduhan.
+ */
+export async function unduhBerkas(jalur: string, namaBerkas: string): Promise<void> {
+  const { data } = await api.get<Blob>(jalur, { responseType: 'blob' })
+
+  const alamat = URL.createObjectURL(data)
+  const tautan = document.createElement('a')
+
+  tautan.href = alamat
+  tautan.download = namaBerkas
+  document.body.appendChild(tautan)
+  tautan.click()
+  tautan.remove()
+
+  URL.revokeObjectURL(alamat)
+}
+
 /** Mengambil galat validasi per kolom untuk ditampilkan di bawah masing-masing isian. */
 export function galatKolom(galat: unknown): Record<string, string> {
   if (!axios.isAxiosError(galat)) return {}

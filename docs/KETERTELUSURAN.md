@@ -18,10 +18,10 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | MOD-PID PPID & Produk Hukum | REQ-F-PID-001..007 | `Api/Publik/PustakaController`, `Api/Admin/ReferensiController` | `pages/publik/Pustaka.tsx`, `PermohonanInformasi.tsx` | `PortalPublikTest::test_bentuk_respons_berhalaman_seragam` |
 | MOD-POT Potensi Desa | REQ-F-POT-001..007 | `Api/Publik/PotensiController`, `Api/Admin/ReferensiController` | `pages/publik/Potensi.tsx` | Verifikasi UMKM pada `ReferensiController` |
 | MOD-LMB Lembaga | REQ-F-LMB-001..004 | `Api/Publik/LembagaController`, model `Lembaga`, `Pengurus` | `pages/publik/Profil.tsx` | Data pribadi aparatur tidak dipaparkan (lihat resource) |
-| MOD-USR Pengguna & Akses | REQ-F-USR-001..015 | `Api/AuthController`, `Http/Middleware/PastikanIzin`, `Api/Admin/PenggunaController` | `lib/auth.tsx`, `pages/auth/*`, `components/layout/Terlindungi.tsx` | `AutentikasiTest` (10 uji), `OtorisasiTest` (8 uji) |
-| MOD-ADM Administrasi | REQ-F-ADM-001..010 | `Api/Admin/DashboardController`, `PengaturanController`, `AuditLogController`, `Services/AuditLogger` | `pages/admin/Dasbor.tsx`, `Pengaturan.tsx`, `AuditLog.tsx` | `OtorisasiTest::test_audit_log_bersifat_hanya_baca` |
+| MOD-USR Pengguna & Akses | REQ-F-USR-001..015 | `Api/AuthController`, `Api/KataSandiController`, `Api/VerifikasiSurelController`, `Http/Middleware/PastikanIzin`, `Api/Admin/PenggunaController` | `lib/auth.ts`, `components/layout/PenyediaAuth.tsx`, `pages/auth/*`, `components/layout/Terlindungi.tsx` | `AutentikasiTest` (10 uji), `PemulihanAkunTest` (9 uji), `OtorisasiTest` (8 uji) |
+| MOD-ADM Administrasi | REQ-F-ADM-001..010 | `Api/Admin/DashboardController`, `PengaturanController`, `AuditLogController`, `Services/AuditLogger`, `Console/Commands/Cadangkan` | `pages/admin/Dasbor.tsx`, `Pengaturan.tsx`, `AuditLog.tsx`, `Laporan.tsx` | `OtorisasiTest::test_audit_log_bersifat_hanya_baca`, `OperasionalTest::test_perintah_pencadangan_...`, `test_ekspor_laporan_...` |
 | MOD-NOT Notifikasi | REQ-F-NOT-001..006 | `Services/NotifikasiService`, model `NotifikasiLog`, perintah `sidesa:ulangi-notifikasi` | Pemberitahuan status pada halaman permohonan | Terpakai pada alur `PermohonanSuratTest` |
-| MOD-SRC Pencarian & SEO | REQ-F-SRC-001..007 | `Api/Publik/PencarianController` | `pages/publik/Halaman.tsx` (Pencarian), `TidakDitemukan` | `PortalPublikTest::test_pencarian_global_menjangkau_berita_dan_layanan` |
+| MOD-SRC Pencarian & SEO | REQ-F-SRC-001..007 | `Api/Publik/PencarianController`, `PetaSitusController` (sitemap dan robots) | `pages/publik/Halaman.tsx` (Pencarian), `TidakDitemukan`, `lib/meta.ts` | `PortalPublikTest::test_pencarian_global_...`, `OperasionalTest::test_sitemap_...`, `test_robots_...` |
 
 ## 2. Aturan bisnis
 
@@ -59,7 +59,8 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-MNT-001 cakupan uji | 58 uji, 274 asersi pada logika inti | `./vendor/bin/phpunit` |
 | REQ-NF-MNT-004 migrasi bernomor | 15 migrasi idempoten | `php artisan migrate:fresh --seed` |
 | REQ-NF-CMP-003 hak subjek data | Profil dapat diakses dan diperbarui pemilik akun | `AuthController::perbaruiProfil` |
-| REQ-NF-CMP-004 retensi | `sidesa:bersihkan-lampiran`, audit log 24 bulan | `PermohonanService::bersihkanLampiranKedaluwarsa` |
+| REQ-NF-CMP-004 retensi | `sidesa:bersihkan-lampiran`, `sidesa:bersihkan-draf`, audit log 24 bulan | `PermohonanService::bersihkanLampiranKedaluwarsa`, `OperasionalTest::test_draf_kedaluwarsa_dibersihkan_terjadwal` |
+| REQ-NF-REL-003, 004 RTO dan RPO | Cadangan harian dan mingguan, prosedur pemulihan berurut | `docs/OPERASIONAL.md` bagian 3, `OperasionalTest::test_perintah_pencadangan_...` |
 | REQ-UI-009 aksesibilitas WCAG 2.1 AA | Tautan lewati navigasi, label terkait, fokus terlihat, target 44 px, padanan tabel pada grafik | `components/ui/*`, `components/chart/GrafikBatang.tsx` |
 
 ## 4. Kebutuhan yang belum diimplementasikan
@@ -67,9 +68,11 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | Kebutuhan | Prioritas | Alasan |
 |---|---|---|
 | REQ-F-SRT-017 (TTE tersertifikasi) | M | Menunggu keputusan OI-02 dan penerbitan sertifikat PSrE; saat ini memakai penandatanganan dalam sistem disertai QR verifikasi |
+| REQ-F-USR-009 (2FA petugas) | S | Menunggu keputusan kanal OTP; penguncian akun dan sesi pendek sudah berlaku |
+| REQ-F-ADM-003 (pengelola menu) | S | Menu masih ditetapkan di kode; dijadwalkan bersama penyempurnaan panel |
 | REQ-F-SRT-023 pencetakan massal | C | Dijadwalkan setelah volume layanan stabil |
 | REQ-F-KNT-013 komentar artikel | C | Memerlukan kebijakan moderasi tambahan |
 | REQ-F-SRC-005, 006 data terstruktur dan RSS | S, C | Direncanakan bersama optimasi SEO Fase 4 |
+| REQ-F-SRC-004 pada perayap tanpa JavaScript | M | Metadata dipasang saat render di peramban; prarender atau render sisi server dijadwalkan Fase 4 |
 | REQ-UI-011, 012 pengaturan ukuran teks dan dwibahasa | S, C | Fase 4 |
-| REQ-F-ADM-006, 007 pencadangan otomatis | M | Bergantung pada penyedia hosting yang dipilih (OI-06); prosedur didokumentasikan saat penyiapan server |
 | REQ-SW-004 integrasi penyedia TTE | M | Sama dengan REQ-F-SRT-017 |

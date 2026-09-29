@@ -18,6 +18,7 @@ import { Pengaduan } from '@/pages/publik/Pengaduan'
 import { LacakPengaduan } from '@/pages/publik/LacakPengaduan'
 import { Masuk } from '@/pages/auth/Masuk'
 import { Daftar } from '@/pages/auth/Daftar'
+import { AturUlangKataSandi, LupaKataSandi } from '@/pages/auth/PemulihanKataSandi'
 import { Aksesibilitas, Galeri, KebijakanPrivasi, Kontak, Pencarian, TidakDitemukan } from '@/pages/publik/Halaman'
 
 // Halaman transparansi memuat pustaka grafik, sehingga dipisah dari berkas utama
@@ -116,6 +117,8 @@ export default function App() {
 
                 <Route path="masuk" element={<Masuk />} />
                 <Route path="daftar" element={<Daftar />} />
+                <Route path="lupa-kata-sandi" element={<LupaKataSandi />} />
+                <Route path="atur-ulang-kata-sandi" element={<AturUlangKataSandi />} />
 
                 <Route
                   path="akun"

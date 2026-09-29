@@ -23,7 +23,10 @@ class AuthController extends Controller
 
     public const MENIT_KUNCI = 15;
 
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly VerifikasiSurelController $verifikasiSurel,
+    ) {}
 
     public function daftar(Request $request): JsonResponse
     {
@@ -70,8 +73,12 @@ class AuthController extends Controller
 
         $this->audit->catat('register', 'User', $pengguna->id, null, ['email' => $pengguna->email]);
 
+        // REQ-F-USR-002: kepemilikan surel dibuktikan melalui tautan verifikasi.
+        $this->verifikasiSurel->kirim($pengguna);
+
         return response()->json([
-            'pesan' => 'Pendaftaran berhasil. Akun Anda menunggu verifikasi NIK oleh petugas desa.',
+            'pesan' => 'Pendaftaran berhasil. Kami mengirim tautan verifikasi ke surel Anda. '
+                .'Akun juga menunggu verifikasi NIK oleh petugas desa.',
             'pengguna' => $this->profil($pengguna),
         ], 201);
     }
@@ -195,6 +202,7 @@ class AuthController extends Controller
             'jenis_kelamin' => $pengguna->jenis_kelamin,
             'pekerjaan' => $pengguna->pekerjaan,
             'status_akun' => $pengguna->status_akun,
+            'surel_terverifikasi' => $pengguna->email_verified_at !== null,
             'nik_terverifikasi' => $pengguna->verifikasi_nik_at !== null,
             'boleh_mengajukan' => $pengguna->bolehMengajukanLayanan(),
             'peran' => $pengguna->role?->kode,

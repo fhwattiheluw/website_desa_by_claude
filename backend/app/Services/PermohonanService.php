@@ -34,6 +34,9 @@ class PermohonanService
     /** Batas perbaikan permohonan yang dikembalikan sebelum kedaluwarsa (BR-07). */
     public const BATAS_PERBAIKAN_HARI = 14;
 
+    /** Batas draf permohonan dapat dilanjutkan (REQ-F-SRT-007). */
+    public const BATAS_DRAF_HARI = 7;
+
     public function __construct(
         private readonly NomorService $nomor,
         private readonly KalenderKerja $kalender,

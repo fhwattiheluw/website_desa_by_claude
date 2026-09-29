@@ -1,15 +1,20 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react'
 import { api, galatKolom, pesanGalat } from '@/lib/api'
 import { useDetailLayanan } from '@/lib/kueri'
 import { useAuth } from '@/lib/auth'
+import { useMeta } from '@/lib/meta'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { AreaTeks, Berkas, Isian, KotakCentang, Pilihan } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
-import type { KolomFormulir } from '@/types'
+import type { KolomFormulir, Permohonan } from '@/types'
+
+/** Nilai teks yang dianggap benar saat memulihkan kolom centang dari draf. */
+const BENAR = new Set(['1', 'true', 'on', 'ya'])
 
 /**
  * Formulir permohonan dibangun dari definisi kolom milik setiap layanan
@@ -18,9 +23,20 @@ import type { KolomFormulir } from '@/types'
  */
 export function AjukanSurat() {
   const { slug = '' } = useParams()
+  const [parameter] = useSearchParams()
   const navigasi = useNavigate()
   const { pengguna } = useAuth()
+  const klien = useQueryClient()
   const { data: layanan, isPending, error } = useDetailLayanan(slug)
+
+  // Pengisian dapat dilanjutkan dari draf yang tersimpan (REQ-F-SRT-007).
+  const idDraf = parameter.get('draf')
+
+  const { data: permohonanDraf, isPending: memuatDraf } = useQuery({
+    queryKey: ['permohonan', idDraf],
+    queryFn: async () => (await api.get<{ data: Permohonan }>(`/permohonan/${idDraf}`)).data.data,
+    enabled: Boolean(idDraf),
+  })
 
   const [nilai, setNilai] = useState<Record<string, string | boolean>>({})
   const [berkas, setBerkas] = useState<File[]>([])
@@ -28,35 +44,50 @@ export function AjukanSurat() {
   const [pesan, setPesan] = useState('')
   const [mengirim, setMengirim] = useState(false)
 
-  // Data profil pengguna mengisi kolom yang bersesuaian (REQ-F-SRT-005).
-  const awal = useMemo<Record<string, string>>(
-    () => ({
+  useMeta({ judul: layanan?.nama ?? 'Ajukan Permohonan' })
+
+  // Nilai bawaan diambil dari draf bila ada, jika tidak dari profil pengguna
+  // sehingga warga tidak perlu mengetik ulang datanya (REQ-F-SRT-005).
+  const awal = useMemo<Record<string, string | boolean>>(() => {
+    const dariProfil: Record<string, string | boolean> = {
       nama_lengkap: pengguna?.nama ?? '',
       alamat: pengguna?.alamat ?? '',
       tempat_lahir: pengguna?.tempat_lahir ?? '',
       tanggal_lahir: pengguna?.tanggal_lahir ?? '',
       pekerjaan: pengguna?.pekerjaan ?? '',
       jenis_kelamin: pengguna?.jenis_kelamin === 'L' ? 'Laki-laki' : pengguna?.jenis_kelamin === 'P' ? 'Perempuan' : '',
-    }),
-    [pengguna],
-  )
+    }
+
+    if (!permohonanDraf?.data_formulir) return dariProfil
+
+    // Nilai draf tersimpan sebagai teks. Kolom centang harus dikembalikan ke
+    // bentuk boolean, sebab teks "0" bila dibaca apa adanya akan tampil
+    // sebagai tercentang dan menyesatkan pemohon.
+    const tipeKolom = new Map((layanan?.kolom_formulir ?? []).map((kolom) => [kolom.nama, kolom.tipe]))
+
+    const dariDraf = Object.fromEntries(
+      Object.entries(permohonanDraf.data_formulir).map(([kunci, isi]) => [
+        kunci,
+        tipeKolom.get(kunci) === 'centang' ? BENAR.has(String(isi).toLowerCase()) : String(isi ?? ''),
+      ]),
+    )
+
+    return { ...dariProfil, ...dariDraf }
+  }, [pengguna, permohonanDraf, layanan])
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
-  if (isPending || !layanan) return <Pemuat />
+  if (isPending || !layanan || (idDraf && memuatDraf)) return <Pemuat />
 
   const ambil = (kolom: KolomFormulir): string | boolean =>
     nilai[kolom.nama] ?? awal[kolom.nama] ?? (kolom.tipe === 'centang' ? false : '')
 
   const ubah = (nama: string, isi: string | boolean) => setNilai((sebelum) => ({ ...sebelum, [nama]: isi }))
 
-  const kirim = async (peristiwa: FormEvent) => {
-    peristiwa.preventDefault()
-    setMengirim(true)
-    setGalat({})
-    setPesan('')
-
+  const susunMuatan = (draf: boolean) => {
     const muatan = new FormData()
     muatan.append('layanan', layanan.slug)
+
+    if (draf) muatan.append('draf', '1')
 
     for (const kolom of layanan.kolom_formulir ?? []) {
       const isi = ambil(kolom)
@@ -68,11 +99,40 @@ export function AjukanSurat() {
       muatan.append(`label_lampiran[${indeks}]`, b.name)
     })
 
+    return muatan
+  }
+
+  const kirim = async (peristiwa: FormEvent, draf = false) => {
+    peristiwa.preventDefault()
+    setMengirim(true)
+    setGalat({})
+    setPesan('')
+
     try {
-      const { data } = await api.post('/permohonan', muatan, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
-      navigasi(`/akun/permohonan/${data.data.id}`, { state: { baru: true } })
+      const muatan = susunMuatan(draf)
+      const pengaturan = { headers: { 'Content-Type': 'multipart/form-data' } }
+
+      let tujuan = idDraf
+
+      if (idDraf && draf) {
+        // Unggahan memakai multipart, sehingga metode PUT dititipkan lewat _method.
+        muatan.append('_method', 'PUT')
+        await api.post(`/permohonan/${idDraf}/draf`, muatan, pengaturan)
+      } else if (idDraf) {
+        await api.post(`/permohonan/${idDraf}/kirim-ulang`, muatan, pengaturan)
+      } else {
+        const { data } = await api.post('/permohonan', muatan, pengaturan)
+        tujuan = String(data.data.id)
+      }
+
+      // Data permohonan yang tersimpan di cache sudah tidak mencerminkan
+      // keadaan terbaru, sehingga dibatalkan agar halaman tujuan memuat ulang.
+      await Promise.all([
+        klien.invalidateQueries({ queryKey: ['permohonan', tujuan] }),
+        klien.invalidateQueries({ queryKey: ['permohonan-saya'] }),
+      ])
+
+      navigasi(`/akun/permohonan/${tujuan}`, { state: { baru: true } })
     } catch (kesalahan) {
       const kolom = galatKolom(kesalahan)
       setGalat(
@@ -223,6 +283,20 @@ export function AjukanSurat() {
           <Tombol type="submit" ukuran="besar" memuat={mengirim}>
             Kirim Permohonan
           </Tombol>
+          {/* REQ-F-SRT-007: pengisian dapat dijeda dan dilanjutkan dalam 7 hari.
+              Permohonan yang dikembalikan petugas tidak dapat dikembalikan
+              menjadi draf, sehingga tombol ini hanya tampil saat relevan. */}
+          {(!idDraf || permohonanDraf?.status === 'draf') && (
+            <Tombol
+              type="button"
+              ragam="halus"
+              ukuran="besar"
+              memuat={mengirim}
+              onClick={(peristiwa) => void kirim(peristiwa, true)}
+            >
+              Simpan Draf
+            </Tombol>
+          )}
           <Tombol type="button" ragam="garis" ukuran="besar" onClick={() => navigasi('/layanan')}>
             Batal
           </Tombol>
@@ -230,6 +304,7 @@ export function AjukanSurat() {
 
         <p className="mt-3 text-sm text-slate-500">
           Dengan mengirim permohonan, Anda menyatakan data yang diisikan benar dan dapat dipertanggungjawabkan.
+          Draf yang disimpan dapat dilanjutkan dalam 7 hari dan belum masuk antrean petugas.
         </p>
       </form>
     </div>

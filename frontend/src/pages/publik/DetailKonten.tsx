@@ -3,6 +3,7 @@ import { ArrowLeft, CalendarDays, MapPin, Share2 } from 'lucide-react'
 import { useKonten } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
 import { tanggal } from '@/lib/format'
+import { useMeta } from '@/lib/meta'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
 import { Lencana } from '@/components/ui/Lencana'
 import type { TipeKonten } from '@/types'
@@ -10,6 +11,13 @@ import type { TipeKonten } from '@/types'
 export function DetailKonten({ tipe }: { tipe: TipeKonten }) {
   const { slug = '' } = useParams()
   const { data, isPending, error } = useKonten(tipe, slug)
+
+  useMeta({
+    judul: data?.judul ?? 'Memuat…',
+    deskripsi: data?.ringkasan ?? undefined,
+    gambar: data?.gambar?.url ?? null,
+    jenis: 'article',
+  })
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
   if (isPending || !data) return <Pemuat />

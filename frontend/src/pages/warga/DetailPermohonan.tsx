@@ -56,9 +56,30 @@ export function DetailPermohonan() {
         <LencanaPermohonan status={data.status} />
       </header>
 
+      {data.status === 'draf' && (
+        <Pemberitahuan jenis="info" judul="Draf tersimpan">
+          <p>
+            Permohonan ini belum dikirim dan belum masuk antrean petugas. Draf dapat dilanjutkan dalam 7 hari sejak
+            terakhir disimpan.
+          </p>
+          <Link
+            to={`/layanan/${data.layanan?.slug}?draf=${data.id}`}
+            className="mt-3 inline-flex min-h-11 items-center rounded-lg bg-desa-700 px-4 text-sm font-medium text-white hover:bg-desa-800"
+          >
+            Lanjutkan Pengisian
+          </Link>
+        </Pemberitahuan>
+      )}
+
       {data.status === 'dikembalikan' && (
         <Pemberitahuan jenis="peringatan" judul="Permohonan perlu diperbaiki">
-          {data.alasan}
+          <p>{data.alasan}</p>
+          <Link
+            to={`/layanan/${data.layanan?.slug}?draf=${data.id}`}
+            className="mt-3 inline-flex min-h-11 items-center rounded-lg bg-desa-700 px-4 text-sm font-medium text-white hover:bg-desa-800"
+          >
+            Perbaiki dan Kirim Ulang
+          </Link>
         </Pemberitahuan>
       )}
 

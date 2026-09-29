@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Konten;
+use App\Models\Permohonan;
 use App\Services\NotifikasiService;
 use App\Services\PermohonanService;
 use Illuminate\Support\Facades\Artisan;
@@ -31,7 +32,21 @@ Artisan::command('sidesa:segarkan-konten', function () {
     $this->info("Konten diarsipkan otomatis: {$diarsipkan}");
 })->purpose('Mengarsipkan pengumuman yang telah melewati tanggal kedaluwarsa');
 
+/** REQ-F-SRT-007: draf yang tidak dilanjutkan dalam 7 hari dibersihkan. */
+Artisan::command('sidesa:bersihkan-draf', function () {
+    $dihapus = Permohonan::where('status', Permohonan::DRAF)
+        ->where('updated_at', '<', now()->subDays(PermohonanService::BATAS_DRAF_HARI))
+        ->delete();
+
+    $this->info("Draf permohonan kedaluwarsa dihapus: {$dihapus}");
+})->purpose('Menghapus draf permohonan yang melewati batas tujuh hari');
+
 Schedule::command('sidesa:tutup-permohonan-kedaluwarsa')->dailyAt('01:00');
 Schedule::command('sidesa:bersihkan-lampiran')->dailyAt('01:30');
+Schedule::command('sidesa:bersihkan-draf')->dailyAt('02:00');
 Schedule::command('sidesa:segarkan-konten')->hourly();
 Schedule::command('sidesa:ulangi-notifikasi')->everyFifteenMinutes();
+
+// REQ-F-ADM-006: basis data dicadangkan harian, media mingguan, retensi 30 hari.
+Schedule::command('sidesa:cadangkan', ['--jenis=basis-data'])->dailyAt('02:30');
+Schedule::command('sidesa:cadangkan', ['--jenis=media'])->weeklyOn(0, '03:00');

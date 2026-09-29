@@ -100,6 +100,36 @@ class PermohonanController extends Controller
     }
 
     /**
+     * Menyimpan perubahan pada draf tanpa mengirimkannya (REQ-F-SRT-007).
+     * Draf yang tidak dilanjutkan dalam tujuh hari dibersihkan terjadwal.
+     */
+    public function simpanDraf(Request $request, Permohonan $permohonan, MediaService $media): JsonResponse
+    {
+        $this->pastikanMilikSendiri($request, $permohonan);
+
+        abort_unless(
+            $permohonan->status === Permohonan::DRAF,
+            Response::HTTP_UNPROCESSABLE_ENTITY,
+            'Hanya permohonan berstatus draf yang dapat disimpan ulang.',
+        );
+
+        $request->validate([
+            'data_formulir' => ['required', 'array'],
+            'lampiran' => ['array', 'max:5'],
+            'lampiran.*' => ['file', 'max:5120'],
+        ]);
+
+        $permohonan->update(['data_formulir' => $request->input('data_formulir')]);
+        $this->simpanLampiran($request, $permohonan, $media);
+
+        return response()->json([
+            'pesan' => 'Draf tersimpan. Anda dapat melanjutkannya dalam '
+                .PermohonanService::BATAS_DRAF_HARI.' hari.',
+            'data' => new PermohonanResource($permohonan->fresh(['jenisLayanan', 'lampiran.media'])),
+        ]);
+    }
+
+    /**
      * Memberi tautan unduh bertanda tangan digital dan berbatas waktu
      * sehingga dokumen tidak dapat diakses oleh sembarang pihak (REQ-F-SRT-018).
      */
