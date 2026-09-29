@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Download, FileDown } from 'lucide-react'
 import { useApbdes, useTahunApbdes } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
@@ -10,11 +10,10 @@ import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
 
 export function Apbdes() {
   const { data: daftarTahun, isPending: memuatTahun } = useTahunApbdes()
-  const [tahun, setTahun] = useState<number | undefined>()
+  const [tahunDipilih, setTahunDipilih] = useState<number | undefined>()
 
-  useEffect(() => {
-    if (!tahun && daftarTahun?.length) setTahun(daftarTahun[0].tahun)
-  }, [daftarTahun, tahun])
+  // Tahun terbaru dipakai sampai pengguna memilih tahun lain.
+  const tahun = tahunDipilih ?? daftarTahun?.[0]?.tahun
 
   const { data, isPending, error } = useApbdes(tahun)
 
@@ -63,7 +62,7 @@ export function Apbdes() {
           <select
             id="tahun-anggaran"
             value={tahun ?? ''}
-            onChange={(e) => setTahun(Number(e.target.value))}
+            onChange={(e) => setTahunDipilih(Number(e.target.value))}
             className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm"
           >
             {daftarTahun.map((item) => (

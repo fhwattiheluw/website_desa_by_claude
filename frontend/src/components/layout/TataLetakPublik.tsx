@@ -6,6 +6,8 @@ import { useAuth } from '@/lib/auth'
 import { Tombol } from '@/components/ui/Tombol'
 
 /** Navigasi utama maksimal tujuh butir tingkat pertama (REQ-UI-003). */
+const TAHUN_BERJALAN = new Date().getFullYear()
+
 const MENU = [
   { ke: '/', teks: 'Beranda' },
   { ke: '/profil', teks: 'Profil Desa' },
@@ -166,7 +168,7 @@ export function TataLetakPublik() {
         </div>
         <div className="border-t border-slate-100 py-4">
           <p className="mx-auto max-w-6xl px-4 text-xs text-slate-500">
-            © {new Date().getFullYear()} Pemerintah {namaDesa}. Portal ini dikelola sesuai Undang-Undang Keterbukaan
+            © {TAHUN_BERJALAN} Pemerintah {namaDesa}. Portal ini dikelola sesuai Undang-Undang Keterbukaan
             Informasi Publik dan Undang-Undang Pelindungan Data Pribadi.
           </p>
         </div>

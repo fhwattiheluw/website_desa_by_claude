@@ -155,13 +155,16 @@ export function Kontak() {
   )
 }
 
+/** Diperbarui bersamaan dengan perubahan isi kebijakan, bukan mengikuti tanggal hari ini. */
+const TANGGAL_KEBIJAKAN = '2026-09-29'
+
 export function KebijakanPrivasi() {
   const { data: desa } = useProfilDesa()
 
   return (
     <article className="prose-desa mx-auto max-w-3xl text-slate-700">
       <h1 className="text-2xl">Kebijakan Privasi</h1>
-      <p className="mt-2 text-sm text-slate-500">Terakhir diperbarui: {tanggal(new Date().toISOString())}</p>
+      <p className="mt-2 text-sm text-slate-500">Terakhir diperbarui: {tanggal(TANGGAL_KEBIJAKAN)}</p>
 
       <h2>Data yang kami kumpulkan</h2>
       <p>

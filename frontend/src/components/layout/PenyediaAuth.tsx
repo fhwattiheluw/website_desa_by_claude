@@ -1,26 +1,18 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api, ambilToken, simpanToken } from './api'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { ambilToken, api, simpanToken } from '@/lib/api'
+import { KonteksAutentikasi } from '@/lib/auth'
 import type { Pengguna } from '@/types'
-
-interface KonteksAuth {
-  pengguna: Pengguna | null
-  memuat: boolean
-  masuk: (email: string, password: string) => Promise<Pengguna>
-  keluar: () => Promise<void>
-  segarkan: () => Promise<void>
-  punyaIzin: (...izin: string[]) => boolean
-}
-
-const Konteks = createContext<KonteksAuth | null>(null)
 
 export function PenyediaAuth({ children }: { children: ReactNode }) {
   const [pengguna, setPengguna] = useState<Pengguna | null>(null)
-  const [memuat, setMemuat] = useState(true)
+  // Tanpa token tersimpan, tidak ada sesi yang perlu dipulihkan.
+  const [memuat, setMemuat] = useState(() => Boolean(ambilToken()))
 
   const segarkan = useCallback(async () => {
     if (!ambilToken()) {
       setPengguna(null)
       setMemuat(false)
+
       return
     }
 
@@ -35,14 +27,36 @@ export function PenyediaAuth({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Pemulihan sesi saat aplikasi dibuka: keadaan awal sudah "memuat", sehingga
+  // pembaruan keadaan hanya terjadi setelah jawaban server diterima.
   useEffect(() => {
-    void segarkan()
-  }, [segarkan])
+    if (!ambilToken()) return
+
+    let dibatalkan = false
+
+    api
+      .get<{ pengguna: Pengguna }>('/auth/saya')
+      .then(({ data }) => {
+        if (!dibatalkan) setPengguna(data.pengguna)
+      })
+      .catch(() => {
+        simpanToken(null)
+        if (!dibatalkan) setPengguna(null)
+      })
+      .finally(() => {
+        if (!dibatalkan) setMemuat(false)
+      })
+
+    return () => {
+      dibatalkan = true
+    }
+  }, [])
 
   const masuk = useCallback(async (email: string, password: string) => {
     const { data } = await api.post<{ token: string; pengguna: Pengguna }>('/auth/masuk', { email, password })
     simpanToken(data.token)
     setPengguna(data.pengguna)
+
     return data.pengguna
   }, [])
 
@@ -69,13 +83,5 @@ export function PenyediaAuth({ children }: { children: ReactNode }) {
     [pengguna, memuat, masuk, keluar, segarkan, punyaIzin],
   )
 
-  return <Konteks.Provider value={nilai}>{children}</Konteks.Provider>
-}
-
-export function useAuth(): KonteksAuth {
-  const konteks = useContext(Konteks)
-
-  if (!konteks) throw new Error('useAuth harus dipakai di dalam PenyediaAuth.')
-
-  return konteks
+  return <KonteksAutentikasi.Provider value={nilai}>{children}</KonteksAutentikasi.Provider>
 }

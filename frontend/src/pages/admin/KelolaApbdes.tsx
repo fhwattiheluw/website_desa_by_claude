@@ -29,7 +29,7 @@ interface HasilImpor {
 export function KelolaApbdes() {
   const klien = useQueryClient()
   const { punyaIzin } = useAuth()
-  const [tahunBaru, setTahunBaru] = useState(String(new Date().getFullYear()))
+  const [tahunBaru, setTahunBaru] = useState(() => String(new Date().getFullYear()))
   const [imporUntuk, setImporUntuk] = useState<TahunAnggaran | null>(null)
   const [berkas, setBerkas] = useState<File | null>(null)
   const [hasilImpor, setHasilImpor] = useState<HasilImpor | null>(null)

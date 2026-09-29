@@ -19,9 +19,11 @@ interface DataLaporan {
 
 /** REQ-F-SRT-025: rekapitulasi kinerja layanan per periode. */
 export function Laporan() {
-  const awalBulan = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10)
-  const [dari, setDari] = useState(awalBulan)
-  const [sampai, setSampai] = useState(new Date().toISOString().slice(0, 10))
+  const [dari, setDari] = useState(() => {
+    const sekarang = new Date()
+    return new Date(sekarang.getFullYear(), sekarang.getMonth(), 1).toISOString().slice(0, 10)
+  })
+  const [sampai, setSampai] = useState(() => new Date().toISOString().slice(0, 10))
 
   const { data, isPending, error } = useQuery({
     queryKey: ['laporan-layanan', dari, sampai],

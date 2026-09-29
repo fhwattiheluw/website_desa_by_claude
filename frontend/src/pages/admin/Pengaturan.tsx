@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, pesanGalat } from '@/lib/api'
 import { judulKan } from '@/lib/format'
@@ -21,7 +21,7 @@ const PANJANG = ['sejarah', 'visi', 'misi', 'ppid_maklumat']
 /** REQ-F-ADM-002: profil dan identitas situs dapat disunting tanpa ubah kode. */
 export function Pengaturan() {
   const klien = useQueryClient()
-  const [nilai, setNilai] = useState<Record<string, string>>({})
+  const [suntingan, setSuntingan] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
   const [sukses, setSukses] = useState('')
 
@@ -30,18 +30,15 @@ export function Pengaturan() {
     queryFn: async () => (await api.get<{ data: BarisPengaturan[] }>('/admin/pengaturan')).data.data,
   })
 
-  useEffect(() => {
-    if (data) setNilai(Object.fromEntries(data.map((baris) => [baris.kunci, baris.nilai ?? ''])))
-  }, [data])
-
   const simpan = useMutation({
     mutationFn: async () =>
       (await api.put('/admin/pengaturan', {
-        pengaturan: Object.entries(nilai).map(([kunci, isi]) => ({ kunci, nilai: isi })),
+        pengaturan: Object.entries(suntingan).map(([kunci, isi]) => ({ kunci, nilai: isi })),
       })).data,
     onSuccess: () => {
       setSukses('Pengaturan situs berhasil diperbarui.')
       setPesan('')
+      setSuntingan({})
       void klien.invalidateQueries({ queryKey: ['profil-desa'] })
       void klien.invalidateQueries({ queryKey: ['pengaturan'] })
     },
@@ -76,16 +73,16 @@ export function Pengaturan() {
                   key={butir.kunci}
                   label={butir.label ?? judulKan(butir.kunci)}
                   rows={butir.kunci === 'misi' ? 6 : 4}
-                  value={nilai[butir.kunci] ?? ''}
-                  onChange={(e) => setNilai((s) => ({ ...s, [butir.kunci]: e.target.value }))}
+                  value={suntingan[butir.kunci] ?? butir.nilai ?? ''}
+                  onChange={(e) => setSuntingan((s) => ({ ...s, [butir.kunci]: e.target.value }))}
                   petunjuk={butir.kunci === 'misi' ? 'Satu poin misi per baris.' : undefined}
                 />
               ) : (
                 <Isian
                   key={butir.kunci}
                   label={butir.label ?? judulKan(butir.kunci)}
-                  value={nilai[butir.kunci] ?? ''}
-                  onChange={(e) => setNilai((s) => ({ ...s, [butir.kunci]: e.target.value }))}
+                  value={suntingan[butir.kunci] ?? butir.nilai ?? ''}
+                  onChange={(e) => setSuntingan((s) => ({ ...s, [butir.kunci]: e.target.value }))}
                 />
               ),
             )}
@@ -93,7 +90,12 @@ export function Pengaturan() {
         </Kartu>
       ))}
 
-      <Tombol ukuran="besar" memuat={simpan.isPending} onClick={() => simpan.mutate()}>
+      <Tombol
+        ukuran="besar"
+        disabled={Object.keys(suntingan).length === 0}
+        memuat={simpan.isPending}
+        onClick={() => simpan.mutate()}
+      >
         Simpan Pengaturan
       </Tombol>
     </div>

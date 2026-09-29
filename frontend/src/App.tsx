@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { PenyediaAuth } from '@/lib/auth'
+import { PenyediaAuth } from '@/components/layout/PenyediaAuth'
 import { TataLetakPublik } from '@/components/layout/TataLetakPublik'
 import { TataLetakPanel } from '@/components/layout/TataLetakPanel'
 import { Terlindungi } from '@/components/layout/Terlindungi'
