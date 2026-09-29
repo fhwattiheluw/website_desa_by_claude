@@ -144,6 +144,7 @@ class NotifikasiService
             'verifikasi_surel' => 'Verifikasi alamat surel Anda',
             'pengaduan_diterima' => 'Pengaduan Anda telah diterima',
             'pengaduan_ditanggapi' => 'Pengaduan Anda telah ditanggapi',
+            'insiden_keamanan' => 'PENTING: indikasi insiden keamanan pada portal desa',
             default => 'Pemberitahuan layanan desa',
         };
     }
@@ -163,6 +164,14 @@ class NotifikasiService
                 .'Abaikan pesan ini bila Anda tidak merasa mengajukan permintaan tersebut.',
             'verifikasi_surel' => 'Silakan verifikasi alamat surel Anda dengan membuka tautan berikut '
                 ."(berlaku {$data['berlaku_jam']} jam):\n{$data['tautan']}",
+            // REQ-NF-CMP-005: peringatan dini agar tenggat pelaporan 3x24 jam
+            // masih dapat dipenuhi.
+            'insiden_keamanan' => "Sistem mendeteksi pola yang perlu segera diperiksa: {$data['keterangan']}.\n\n"
+                ."Terjadi {$data['jumlah']} kali dalam {$data['jendela_jam']} jam terakhir, "
+                ."melewati batas kewajaran {$data['batas']} kali.\n\n"
+                .'Periksa audit log pada panel administrasi dan ikuti prosedur penanganan insiden pada '
+                .'dokumen operasional. Bila terbukti terjadi kebocoran data pribadi, pemberitahuan kepada subjek '
+                .'data dan lembaga berwenang wajib disampaikan paling lambat 3x24 jam sejak diketahui.',
             default => 'Terdapat pembaruan pada layanan yang Anda ajukan.',
         };
 

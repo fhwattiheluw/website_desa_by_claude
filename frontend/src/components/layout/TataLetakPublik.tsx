@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Menu, Search, X } from 'lucide-react'
 import { useProfilDesa } from '@/lib/kueri'
+import { useCatatKunjungan } from '@/lib/analitik'
 import { useAuth } from '@/lib/auth'
 import { Tombol } from '@/components/ui/Tombol'
 import { PengaturanTampilan } from '@/components/ui/PengaturanTampilan'
@@ -25,6 +26,9 @@ export function TataLetakPublik() {
   const [menuTerbuka, setMenuTerbuka] = useState(false)
   const [kataKunci, setKataKunci] = useState('')
   const navigasi = useNavigate()
+
+  // REQ-SW-006: hitungan kunjungan laman publik, tanpa data pribadi.
+  useCatatKunjungan()
 
   const namaDesa = desa?.nama_desa ? `Desa ${desa.nama_desa}` : 'Portal Desa'
 
@@ -166,6 +170,11 @@ export function TataLetakPublik() {
             <p className="text-sm text-slate-600">
               <Link to="/kebijakan-privasi" className="underline underline-offset-2 hover:text-desa-700">
                 Kebijakan privasi
+              </Link>
+            </p>
+            <p className="text-sm text-slate-600">
+              <Link to="/syarat-penggunaan" className="underline underline-offset-2 hover:text-desa-700">
+                Syarat penggunaan
               </Link>
             </p>
           </div>

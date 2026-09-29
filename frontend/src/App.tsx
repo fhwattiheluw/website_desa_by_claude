@@ -20,7 +20,15 @@ import { LacakPengaduan } from '@/pages/publik/LacakPengaduan'
 import { Masuk } from '@/pages/auth/Masuk'
 import { Daftar } from '@/pages/auth/Daftar'
 import { AturUlangKataSandi, LupaKataSandi } from '@/pages/auth/PemulihanKataSandi'
-import { Aksesibilitas, Galeri, KebijakanPrivasi, Kontak, Pencarian, TidakDitemukan } from '@/pages/publik/Halaman'
+import {
+  Aksesibilitas,
+  Galeri,
+  KebijakanPrivasi,
+  Kontak,
+  Pencarian,
+  SyaratPenggunaan,
+  TidakDitemukan,
+} from '@/pages/publik/Halaman'
 
 // Halaman transparansi memuat pustaka grafik, sehingga dipisah dari berkas utama
 // agar halaman pertama tetap ringan pada koneksi lambat (REQ-NF-PRF-003).
@@ -58,6 +66,10 @@ const AuditLog = lazy(() => import('@/pages/admin/AuditLog').then((m) => ({ defa
 const PengaturanSitus = lazy(() => import('@/pages/admin/Pengaturan').then((m) => ({ default: m.Pengaturan })))
 const KelolaBumdes = lazy(() => import('@/pages/admin/KelolaBumdes').then((m) => ({ default: m.KelolaBumdes })))
 const TandaTangan = lazy(() => import('@/pages/admin/TandaTangan').then((m) => ({ default: m.TandaTangan })))
+const PermintaanData = lazy(() =>
+  import('@/pages/admin/PermintaanData').then((m) => ({ default: m.PermintaanData })),
+)
+const Analitik = lazy(() => import('@/pages/admin/Analitik').then((m) => ({ default: m.Analitik })))
 
 const klienKueri = new QueryClient({
   defaultOptions: {
@@ -121,6 +133,7 @@ export default function App() {
                 <Route path="pencarian" element={<Pencarian />} />
                 <Route path="kontak" element={<Kontak />} />
                 <Route path="kebijakan-privasi" element={<KebijakanPrivasi />} />
+                <Route path="syarat-penggunaan" element={<SyaratPenggunaan />} />
                 <Route path="aksesibilitas" element={<Aksesibilitas />} />
 
                 <Route path="masuk" element={<Masuk />} />
@@ -164,7 +177,9 @@ export default function App() {
                 <Route path="apbdes" element={<KelolaApbdes />} />
                 <Route path="pengguna" element={<KelolaPengguna />} />
                 <Route path="laporan" element={<Laporan />} />
+                <Route path="analitik" element={<Analitik />} />
                 <Route path="audit-log" element={<AuditLog />} />
+                <Route path="permintaan-data" element={<PermintaanData />} />
                 <Route path="bumdes" element={<KelolaBumdes />} />
                 <Route path="tanda-tangan" element={<TandaTangan />} />
                 <Route path="pengaturan" element={<PengaturanSitus />} />

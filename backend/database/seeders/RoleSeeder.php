@@ -33,6 +33,7 @@ class RoleSeeder extends Seeder
         'pengguna.lihat' => ['nama' => 'Melihat daftar pengguna', 'grup' => 'pengguna'],
         'pengguna.verifikasi' => ['nama' => 'Memvalidasi NIK warga', 'grup' => 'pengguna'],
         'pengguna.kelola' => ['nama' => 'Mengelola akun dan peran', 'grup' => 'pengguna'],
+        'data_pribadi.kelola' => ['nama' => 'Menangani permintaan hak subjek data', 'grup' => 'pengguna'],
         'pengaturan.kelola' => ['nama' => 'Mengubah pengaturan situs', 'grup' => 'sistem'],
         'audit.lihat' => ['nama' => 'Melihat audit log', 'grup' => 'sistem'],
     ];
@@ -71,7 +72,7 @@ class RoleSeeder extends Seeder
                 'permohonan.buat_loket', 'surat.batalkan', 'laporan.lihat', 'pengaduan.lihat', 'pengaduan.kelola',
                 'pengaduan.disposisi', 'pengaduan.moderasi', 'apbdes.kelola', 'apbdes.publikasi',
                 'statistik.kelola', 'bumdes.kelola', 'bumdes.publikasi',
-                'pengguna.lihat', 'pengguna.verifikasi', 'audit.lihat',
+                'pengguna.lihat', 'pengguna.verifikasi', 'data_pribadi.kelola', 'audit.lihat',
             ],
         ],
         Role::KADES => [

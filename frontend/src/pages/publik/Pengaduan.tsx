@@ -8,6 +8,8 @@ import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { AreaTeks, Isian, KotakCentang, Pilihan } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { Captcha } from '@/components/ui/Captcha'
+import { useCaptcha } from '@/lib/captcha'
 import { LencanaPengaduan } from '@/components/ui/Lencana'
 import { useAuth } from '@/lib/auth'
 import { useMeta } from '@/lib/meta'
@@ -25,6 +27,7 @@ export function Pengaduan() {
   const [hasil, setHasil] = useState<HasilKirim | null>(null)
   const [galat, setGalat] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
+  const captcha = useCaptcha()
 
   useMeta({
     judul: 'Pengaduan dan Aspirasi Masyarakat',
@@ -46,7 +49,7 @@ export function Pengaduan() {
   const kirim = useMutation({
     mutationFn: async (formulir: FormData) => {
       const muatan = Object.fromEntries(formulir.entries())
-      return (await api.post<HasilKirim>('/pengaduan', { ...muatan, anonim })).data
+      return (await api.post<HasilKirim>('/pengaduan', { ...muatan, anonim, ...captcha.muatan() })).data
     },
     onSuccess: (data) => {
       setHasil(data)
@@ -56,6 +59,8 @@ export function Pengaduan() {
     onError: (kesalahan) => {
       setGalat(galatKolom(kesalahan))
       setPesan(pesanGalat(kesalahan))
+      // Tantangan sekali pakai: pengiriman gagal selalu memerlukan yang baru.
+      captcha.segarkan()
     },
   })
 
@@ -183,6 +188,8 @@ export function Pengaduan() {
                 <Isian label="Lokasi kejadian" name="lokasi" galat={galat['lokasi']} />
                 <Isian label="Tanggal kejadian" name="tanggal_kejadian" type="date" galat={galat['tanggal_kejadian']} />
               </div>
+
+              <Captcha kendali={captcha} galat={galat['captcha_jawaban']} />
 
               <p className="text-sm text-slate-500">
                 Dengan mengirim laporan, Anda menyetujui pemrosesan data kontak untuk keperluan tindak lanjut sesuai

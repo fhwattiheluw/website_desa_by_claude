@@ -23,6 +23,8 @@ class PenggunaController extends Controller
                 'role', fn ($r) => $r->where('kode', $request->string('peran'))
             ))
             ->when($request->filled('status'), fn ($q) => $q->where('status_akun', $request->string('status')))
+            // REQ-NF-CMP-004: akun yang ditandai penjadwal karena lama tidak dipakai.
+            ->when($request->boolean('perlu_ditinjau'), fn ($q) => $q->whereNotNull('tinjauan_akun_pada'))
             ->when($request->filled('q'), fn ($q) => $q->where(
                 fn ($w) => $w->where('name', 'like', '%'.$request->string('q').'%')
                     ->orWhere('email', 'like', '%'.$request->string('q').'%')
@@ -40,6 +42,7 @@ class PenggunaController extends Controller
                 'nik_terverifikasi' => $u->verifikasi_nik_at !== null,
                 'terdaftar_pada' => $u->created_at?->toIso8601String(),
                 'masuk_terakhir' => $u->last_login_at?->toIso8601String(),
+                'ditandai_untuk_ditinjau_pada' => $u->tinjauan_akun_pada?->toIso8601String(),
             ]);
 
         return response()->json($data);

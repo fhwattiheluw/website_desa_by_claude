@@ -5,6 +5,8 @@ import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { AreaTeks, Isian } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { Captcha } from '@/components/ui/Captcha'
+import { useCaptcha } from '@/lib/captcha'
 import { useAuth } from '@/lib/auth'
 
 /** REQ-F-PID-003: permohonan informasi publik secara daring. */
@@ -14,6 +16,7 @@ export function PermohonanInformasi() {
   const [galat, setGalat] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
   const [mengirim, setMengirim] = useState(false)
+  const captcha = useCaptcha()
 
   const kirim = async (peristiwa: FormEvent<HTMLFormElement>) => {
     peristiwa.preventDefault()
@@ -23,11 +26,12 @@ export function PermohonanInformasi() {
 
     try {
       const muatan = Object.fromEntries(new FormData(peristiwa.currentTarget).entries())
-      const { data } = await api.post('/permohonan-informasi', muatan)
+      const { data } = await api.post('/permohonan-informasi', { ...muatan, ...captcha.muatan() })
       setHasil(data)
     } catch (kesalahan) {
       setGalat(galatKolom(kesalahan))
       setPesan(pesanGalat(kesalahan))
+      captcha.segarkan()
     } finally {
       setMengirim(false)
     }
@@ -87,6 +91,8 @@ export function PermohonanInformasi() {
               galat={galat['informasi_diminta']}
             />
             <Isian label="Tujuan penggunaan informasi" name="tujuan_penggunaan" galat={galat['tujuan_penggunaan']} />
+
+            <Captcha kendali={captcha} galat={galat['captcha_jawaban']} />
 
             <Tombol type="submit" ukuran="besar" memuat={mengirim}>
               Kirim Permohonan

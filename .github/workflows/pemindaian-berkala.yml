@@ -1,0 +1,36 @@
+# Pemindaian kerentanan berkala (REQ-NF-SEC-012): kerentanan baru sering
+# diumumkan setelah kode berhenti berubah, sehingga pemindaian tidak cukup hanya
+# saat ada perubahan. Berjalan tiap Senin pagi dan dapat dipicu manual.
+name: Pemindaian Berkala
+
+on:
+  schedule:
+    - cron: '17 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit dependensi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Pindai dependensi PHP
+        working-directory: backend
+        run: composer audit --no-interaction --abandoned=report
+
+      - name: Pindai dependensi JavaScript
+        working-directory: frontend
+        run: npm audit --audit-level=high

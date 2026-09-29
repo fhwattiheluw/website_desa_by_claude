@@ -7,6 +7,7 @@ use App\Http\Resources\PermohonanResource;
 use App\Models\JenisLayanan;
 use App\Models\Permohonan;
 use App\Models\User;
+use App\Services\AuditLogger;
 use App\Services\KalenderKerja;
 use App\Services\MediaService;
 use App\Services\PermohonanService;
@@ -25,6 +26,7 @@ class PermohonanController extends Controller
     public function __construct(
         private readonly PermohonanService $layanan,
         private readonly SuratService $surat,
+        private readonly AuditLogger $audit,
     ) {}
 
     public function index(Request $request): AnonymousResourceCollection
@@ -191,6 +193,17 @@ class PermohonanController extends Controller
             ->get();
 
         $nama = 'laporan-layanan-'.$dari->format('Ymd').'-'.$sampai->format('Ymd').'.csv';
+
+        /*
+         * Ekspor massal adalah jalur keluar data pribadi yang paling mudah
+         * disalahgunakan, jadi setiap pengambilan dicatat lengkap dengan
+         * rentang dan jumlah barisnya (REQ-NF-CMP-005).
+         */
+        $this->audit->catat('ekspor_laporan', 'Permohonan', null, null, [
+            'dari' => $dari->toDateString(),
+            'sampai' => $sampai->toDateString(),
+            'jumlah_baris' => $permohonan->count(),
+        ]);
 
         return response()->streamDownload(function () use ($permohonan) {
             $keluaran = fopen('php://output', 'wb');

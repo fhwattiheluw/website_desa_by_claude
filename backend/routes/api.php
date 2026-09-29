@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DataPribadiController;
 use App\Http\Controllers\Api\KataSandiController;
 use App\Http\Controllers\Api\Publik;
 use App\Http\Controllers\Api\VerifikasiSurelController;
@@ -20,6 +21,7 @@ Route::prefix('v1')->group(function () {
     /* ---------------------------------------------------------------- Publik */
     Route::middleware('throttle:api')->group(function () {
         Route::get('beranda', Publik\BerandaController::class);
+        Route::get('captcha', Publik\CaptchaController::class);
         Route::get('profil-desa', Publik\ProfilController::class);
         Route::get('pencarian', Publik\PencarianController::class);
 
@@ -56,12 +58,21 @@ Route::prefix('v1')->group(function () {
         Route::get('lembaga/{slug}', [Publik\LembagaController::class, 'show']);
     });
 
-    // Formulir publik dibatasi lajunya untuk mencegah penyalahgunaan (REQ-F-ADU-010).
-    Route::middleware('throttle:formulir-publik')->group(function () {
+    /*
+     * Formulir publik dilindungi dua lapis (REQ-F-ADU-010): pembatasan laju
+     * pengiriman dan tantangan CAPTCHA yang diverifikasi di sisi server.
+     */
+    Route::middleware(['throttle:formulir-publik', 'captcha'])->group(function () {
         Route::post('pengaduan', [Publik\PengaduanController::class, 'store']);
         Route::post('permohonan-informasi', [Publik\PustakaController::class, 'ajukanInformasi']);
         Route::post('umkm/daftar', [Publik\PotensiController::class, 'daftarUmkm']);
     });
+
+    /*
+     * Pencatat kunjungan laman (REQ-SW-006). Lajunya dibatasi tersendiri karena
+     * dipanggil pada setiap perpindahan laman.
+     */
+    Route::post('kunjungan', Publik\KunjunganController::class)->middleware('throttle:analitik');
 
     /* ------------------------------------------------------- Data terbuka */
     Route::prefix('terbuka')->middleware('throttle:terbuka')->group(function () {
@@ -96,6 +107,12 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/saya', [AuthController::class, 'saya']);
         Route::put('auth/profil', [AuthController::class, 'perbaruiProfil']);
         Route::put('auth/kata-sandi', [AuthController::class, 'ubahKataSandi']);
+
+        // Hak subjek data: salinan data pribadi dan permintaan penghapusan
+        // (REQ-F-USR-013).
+        Route::get('auth/data-pribadi', [DataPribadiController::class, 'ringkasan']);
+        Route::get('auth/data-pribadi/unduh', [DataPribadiController::class, 'unduh']);
+        Route::post('auth/data-pribadi/penghapusan', [DataPribadiController::class, 'ajukanPenghapusan']);
 
         Route::prefix('permohonan')->group(function () {
             Route::get('/', [Warga\PermohonanController::class, 'index']);
@@ -218,5 +235,12 @@ Route::prefix('v1')->group(function () {
         Route::get('pengaturan', [Admin\PengaturanController::class, 'index'])->middleware('izin:pengaturan.kelola');
         Route::put('pengaturan', [Admin\PengaturanController::class, 'update'])->middleware('izin:pengaturan.kelola');
         Route::get('audit-log', [Admin\AuditLogController::class, 'index'])->middleware('izin:audit.lihat');
+        Route::get('analitik', Admin\AnalitikController::class)->middleware('izin:laporan.lihat');
+
+        // Permintaan hak subjek data (REQ-F-USR-013)
+        Route::get('permintaan-data', [Admin\PermintaanDataController::class, 'index'])
+            ->middleware('izin:data_pribadi.kelola');
+        Route::post('permintaan-data/{permintaan}/tindak', [Admin\PermintaanDataController::class, 'tindak'])
+            ->middleware('izin:data_pribadi.kelola');
     });
 });

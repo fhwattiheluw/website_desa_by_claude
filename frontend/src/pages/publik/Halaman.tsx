@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Clock, Mail, MapPin, Phone } from 'lucide-react'
 import { api, pesanGalat } from '@/lib/api'
 import { useProfilDesa } from '@/lib/kueri'
+import { useMeta } from '@/lib/meta'
 import { judulKan, tanggal } from '@/lib/format'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { GalatMuat, KondisiKosong, Pemuat } from '@/components/ui/Status'
@@ -161,6 +162,11 @@ const TANGGAL_KEBIJAKAN = '2026-09-29'
 export function KebijakanPrivasi() {
   const { data: desa } = useProfilDesa()
 
+  useMeta({
+    judul: 'Kebijakan Privasi',
+    deskripsi: 'Bagaimana pemerintah desa mengumpulkan, melindungi, menyimpan, dan menghapus data pribadi warga.',
+  })
+
   return (
     <article className="prose-desa mx-auto max-w-3xl text-slate-700">
       <h1 className="text-2xl">Kebijakan Privasi</h1>
@@ -197,6 +203,94 @@ export function KebijakanPrivasi() {
       <p>
         Pertanyaan mengenai kebijakan ini dapat disampaikan ke {desa?.email ?? 'kantor desa'} atau datang langsung pada
         jam pelayanan.
+      </p>
+    </article>
+  )
+}
+
+/**
+ * REQ-NF-CMP-001: Syarat Penggunaan, dapat dicapai dari kaki setiap halaman
+ * bersama Kebijakan Privasi.
+ */
+export function SyaratPenggunaan() {
+  const { data: desa } = useProfilDesa()
+  const namaDesa = desa?.nama_desa ? `Desa ${desa.nama_desa}` : 'pemerintah desa'
+
+  useMeta({
+    judul: 'Syarat Penggunaan',
+    deskripsi: 'Ketentuan penggunaan portal desa: hak, kewajiban, dan batasan bagi pengguna layanan daring.',
+  })
+
+  return (
+    <article className="prose-desa mx-auto max-w-3xl text-slate-700">
+      <h1 className="text-2xl">Syarat Penggunaan</h1>
+      <p className="mt-2 text-sm text-slate-500">Terakhir diperbarui: {tanggal(TANGGAL_KEBIJAKAN)}</p>
+
+      <p className="mt-3">
+        Portal ini disediakan oleh Pemerintah {namaDesa} sebagai kanal resmi informasi dan layanan administrasi. Dengan
+        mengakses atau menggunakan portal, Anda dianggap membaca dan menyetujui syarat berikut.
+      </p>
+
+      <h2>Penggunaan yang diperkenankan</h2>
+      <ul>
+        <li>Membaca informasi publik, dokumen anggaran, dan produk hukum yang ditayangkan.</li>
+        <li>Mengajukan layanan administrasi atas nama diri sendiri atau anggota keluarga dalam satu kartu keluarga.</li>
+        <li>Menyampaikan pengaduan, aspirasi, dan permohonan informasi publik secara jujur.</li>
+        <li>Menggunakan kembali data terbuka yang kami sediakan dengan mencantumkan sumbernya.</li>
+      </ul>
+
+      <h2>Yang tidak diperkenankan</h2>
+      <ul>
+        <li>Memberikan identitas atau dokumen palsu, termasuk mengajukan layanan atas nama orang lain tanpa hak.</li>
+        <li>Mengirim pengaduan yang memuat hinaan, ancaman, ujaran kebencian, atau tuduhan tanpa dasar.</li>
+        <li>Mengunggah berkas yang memuat perangkat perusak atau materi yang melanggar hukum.</li>
+        <li>Mencoba menembus pembatasan akses, mengambil data secara massal, atau mengganggu ketersediaan layanan.</li>
+      </ul>
+
+      <h2>Kewajiban Anda atas akun</h2>
+      <p>
+        Kata sandi bersifat pribadi dan menjadi tanggung jawab pemilik akun. Segala pengajuan yang masuk melalui akun
+        Anda dianggap berasal dari Anda. Bila Anda menduga akun disalahgunakan, segera ubah kata sandi dan beri tahu
+        petugas desa.
+      </p>
+
+      <h2>Keabsahan dokumen elektronik</h2>
+      <p>
+        Surat yang diterbitkan melalui portal ini sah sebagai dokumen elektronik. Keasliannya dapat diperiksa siapa pun
+        melalui kode QR atau kode verifikasi pada laman{' '}
+        <Link to="/layanan/verifikasi" className="underline underline-offset-2">
+          verifikasi surat
+        </Link>
+        . Dokumen yang dibatalkan akan tampil sebagai tidak berlaku pada laman tersebut.
+      </p>
+
+      <h2>Ketersediaan dan keakuratan</h2>
+      <p>
+        Kami berupaya menjaga portal tetap tersedia dan isinya mutakhir. Layanan dapat terhenti sementara karena
+        pemeliharaan atau gangguan di luar kendali kami. Untuk urusan yang memerlukan kepastian hukum, dokumen resmi
+        yang diterbitkan kantor desa tetap menjadi acuan.
+      </p>
+
+      <h2>Konsekuensi pelanggaran</h2>
+      <p>
+        Pelanggaran syarat ini dapat berakibat penonaktifan akun, pembatalan surat yang telah diterbitkan, serta
+        penerusan perkara kepada aparat penegak hukum bila memenuhi unsur pidana. Pemerintah desa memberi tahu alasan
+        penonaktifan melalui kanal kontak yang Anda daftarkan.
+      </p>
+
+      <h2>Pelindungan data pribadi</h2>
+      <p>
+        Pemrosesan data pribadi diatur pada{' '}
+        <Link to="/kebijakan-privasi" className="underline underline-offset-2">
+          Kebijakan Privasi
+        </Link>
+        , termasuk hak Anda untuk mengunduh dan meminta penghapusan data.
+      </p>
+
+      <h2>Perubahan syarat</h2>
+      <p>
+        Syarat ini dapat diperbarui bila ketentuan hukum atau cakupan layanan berubah. Tanggal pembaruan selalu
+        dicantumkan di bagian atas halaman, dan perubahan berlaku sejak ditayangkan.
       </p>
     </article>
   )

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  BarChart3, Building2, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquareWarning,
-  PenLine, Settings, ShieldCheck, Users, X,
+  BarChart3, Building2, Eye, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquareWarning,
+  PenLine, Settings, ShieldCheck, UserX, Users, X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useProfilDesa } from '@/lib/kueri'
@@ -24,6 +24,8 @@ const MENU: ButirMenu[] = [
   { ke: '/admin/pengguna', teks: 'Pengguna', ikon: Users, izin: ['pengguna.lihat'] },
   { ke: '/admin/tanda-tangan', teks: 'Tanda Tangan', ikon: PenLine, izin: ['permohonan.tanda_tangan'] },
   { ke: '/admin/laporan', teks: 'Laporan Layanan', ikon: Files, izin: ['laporan.lihat'] },
+  { ke: '/admin/permintaan-data', teks: 'Hak Subjek Data', ikon: UserX, izin: ['data_pribadi.kelola'] },
+  { ke: '/admin/analitik', teks: 'Statistik Kunjungan', ikon: Eye, izin: ['laporan.lihat'] },
   { ke: '/admin/audit-log', teks: 'Audit Log', ikon: ShieldCheck, izin: ['audit.lihat'] },
   { ke: '/admin/pengaturan', teks: 'Pengaturan', ikon: Settings, izin: ['pengaturan.kelola'] },
 ]

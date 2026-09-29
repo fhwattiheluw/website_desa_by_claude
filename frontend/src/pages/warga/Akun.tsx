@@ -9,6 +9,7 @@ import { LencanaPermohonan } from '@/components/ui/Lencana'
 import { TautanTombol, Tombol } from '@/components/ui/Tombol'
 import { GalatMuat, KondisiKosong, Rangka } from '@/components/ui/Status'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { HakDataPribadi } from '@/pages/warga/HakDataPribadi'
 import type { Halaman, Permohonan } from '@/types'
 
 export function Akun() {
@@ -73,8 +74,8 @@ export function Akun() {
             </div>
           </dl>
           <p className="mt-4 text-xs text-slate-500">
-            NIK ditampilkan sebagian demi keamanan. Anda berhak meminta koreksi atau penghapusan data pribadi melalui
-            kantor desa.
+            NIK ditampilkan sebagian demi keamanan. Koreksi, unduhan, dan penghapusan data pribadi dapat Anda lakukan
+            sendiri pada bagian Hak atas Data Pribadi di bawah.
           </p>
         </IsiKartu>
       </Kartu>
@@ -127,6 +128,8 @@ export function Akun() {
           </ul>
         )}
       </Kartu>
+
+      <HakDataPribadi />
     </div>
   )
 }

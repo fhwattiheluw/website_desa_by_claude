@@ -7,6 +7,8 @@ import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { AreaTeks, Isian, KotakCentang, Pilihan } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { Captcha } from '@/components/ui/Captcha'
+import { useCaptcha } from '@/lib/captcha'
 
 const KATEGORI = [
   'Makanan Olahan', 'Minuman', 'Kerajinan', 'Pertanian', 'Perikanan',
@@ -21,6 +23,7 @@ export function DaftarUmkm() {
   const [berhasil, setBerhasil] = useState(false)
   const [mengirim, setMengirim] = useState(false)
   const [setuju, setSetuju] = useState(false)
+  const captcha = useCaptcha()
 
   useMeta({
     judul: 'Daftarkan Usaha Anda',
@@ -36,11 +39,12 @@ export function DaftarUmkm() {
     const formulir = Object.fromEntries(new FormData(peristiwa.currentTarget).entries())
 
     try {
-      await api.post('/umkm/daftar', { ...formulir, consent_kontak: setuju })
+      await api.post('/umkm/daftar', { ...formulir, consent_kontak: setuju, ...captcha.muatan() })
       setBerhasil(true)
     } catch (kesalahan) {
       setGalat(galatKolom(kesalahan))
       setPesan(pesanGalat(kesalahan))
+      captcha.segarkan()
     } finally {
       setMengirim(false)
     }
@@ -121,6 +125,8 @@ export function DaftarUmkm() {
               onChange={(e) => setSetuju(e.target.checked)}
               label="Saya setuju nomor kontak usaha ditampilkan pada direktori publik agar calon pembeli dapat menghubungi saya."
             />
+
+            <Captcha kendali={captcha} galat={galat['captcha_jawaban']} />
 
             <p className="text-sm text-slate-500">
               Bila persetujuan di atas tidak dicentang, usaha Anda tetap dapat tayang namun nomor kontak

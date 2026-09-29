@@ -37,6 +37,7 @@ class User extends Authenticatable
             'verifikasi_nik_at' => 'datetime',
             'consent_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'tinjauan_akun_pada' => 'datetime',
             'terkunci_sampai' => 'datetime',
             'tanggal_lahir' => 'date',
             'password' => 'hashed',

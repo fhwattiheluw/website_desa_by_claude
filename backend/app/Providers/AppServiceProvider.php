@@ -57,5 +57,11 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(60)->by('terbuka:'.$request->ip()),
             Limit::perDay(2000)->by('terbuka:'.$request->ip()),
         ]);
+
+        // Pencatat kunjungan dipanggil sekali per perpindahan laman, jadi
+        // kuotanya lebih longgar daripada formulir namun tetap terbatas agar
+        // angka tidak mudah digelembungkan (REQ-SW-006).
+        RateLimiter::for('analitik', fn (Request $request) => Limit::perMinute(120)
+            ->by('analitik:'.$request->ip()));
     }
 }

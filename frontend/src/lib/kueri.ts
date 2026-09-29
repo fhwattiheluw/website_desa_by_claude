@@ -4,12 +4,24 @@ import type { Apbdes, Halaman, Konten, JenisLayanan, PengaturanDesa, Statistik, 
 
 /** Kueri bersama untuk data publik yang jarang berubah. */
 
+interface JawabanProfil {
+  data: PengaturanDesa
+  analitik_aktif: boolean
+}
+
+const KUERI_PROFIL = {
+  queryKey: ['profil-desa'],
+  queryFn: async () => (await api.get<JawabanProfil>('/profil-desa')).data,
+  staleTime: 10 * 60 * 1000,
+} as const
+
 export function useProfilDesa() {
-  return useQuery({
-    queryKey: ['profil-desa'],
-    queryFn: async () => (await api.get<{ data: PengaturanDesa }>('/profil-desa')).data.data,
-    staleTime: 10 * 60 * 1000,
-  })
+  return useQuery({ ...KUERI_PROFIL, select: (jawaban: JawabanProfil) => jawaban.data })
+}
+
+/** REQ-SW-006: portal hanya mengirim hitungan kunjungan bila desa menyalakannya. */
+export function useAnalitikAktif() {
+  return useQuery({ ...KUERI_PROFIL, select: (jawaban: JawabanProfil) => jawaban.analitik_aktif })
 }
 
 export function useBeranda<T = unknown>() {

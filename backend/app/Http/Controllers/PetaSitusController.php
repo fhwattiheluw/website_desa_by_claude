@@ -35,6 +35,7 @@ class PetaSitusController extends Controller
         ['/potensi/wisata', 'monthly', '0.6'],
         ['/kontak', 'yearly', '0.5'],
         ['/kebijakan-privasi', 'yearly', '0.3'],
+        ['/syarat-penggunaan', 'yearly', '0.3'],
         ['/aksesibilitas', 'yearly', '0.3'],
     ];
 
