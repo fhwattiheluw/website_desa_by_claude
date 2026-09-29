@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PenyediaAuth } from '@/components/layout/PenyediaAuth'
+import { PenyediaBahasa } from '@/components/layout/PenyediaBahasa'
 import { TataLetakPublik } from '@/components/layout/TataLetakPublik'
 import { TataLetakPanel } from '@/components/layout/TataLetakPanel'
 import { Terlindungi } from '@/components/layout/Terlindungi'
@@ -31,6 +32,8 @@ const PermohonanInformasi = lazy(() =>
   import('@/pages/publik/PermohonanInformasi').then((m) => ({ default: m.PermohonanInformasi })),
 )
 const DirektoriUmkm = lazy(() => import('@/pages/publik/Potensi').then((m) => ({ default: m.DirektoriUmkm })))
+const DaftarUmkm = lazy(() => import('@/pages/publik/DaftarUmkm').then((m) => ({ default: m.DaftarUmkm })))
+const Bumdes = lazy(() => import('@/pages/publik/Bumdes').then((m) => ({ default: m.Bumdes })))
 const DestinasiWisata = lazy(() => import('@/pages/publik/Potensi').then((m) => ({ default: m.DestinasiWisata })))
 
 const Akun = lazy(() => import('@/pages/warga/Akun').then((m) => ({ default: m.Akun })))
@@ -53,6 +56,8 @@ const KelolaApbdes = lazy(() => import('@/pages/admin/KelolaApbdes').then((m) =>
 const Laporan = lazy(() => import('@/pages/admin/Laporan').then((m) => ({ default: m.Laporan })))
 const AuditLog = lazy(() => import('@/pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })))
 const PengaturanSitus = lazy(() => import('@/pages/admin/Pengaturan').then((m) => ({ default: m.Pengaturan })))
+const KelolaBumdes = lazy(() => import('@/pages/admin/KelolaBumdes').then((m) => ({ default: m.KelolaBumdes })))
+const TandaTangan = lazy(() => import('@/pages/admin/TandaTangan').then((m) => ({ default: m.TandaTangan })))
 
 const klienKueri = new QueryClient({
   defaultOptions: {
@@ -69,6 +74,7 @@ export default function App() {
     <QueryClientProvider client={klienKueri}>
       <BrowserRouter>
         <PenyediaAuth>
+          <PenyediaBahasa>
           <BatasGalat>
             <Suspense fallback={<Pemuat />}>
             <Routes>
@@ -108,7 +114,9 @@ export default function App() {
                 <Route path="pengaduan/lacak" element={<LacakPengaduan />} />
 
                 <Route path="potensi/umkm" element={<DirektoriUmkm />} />
+                <Route path="potensi/umkm/daftar" element={<DaftarUmkm />} />
                 <Route path="potensi/wisata" element={<DestinasiWisata />} />
+                <Route path="potensi/bumdes" element={<Bumdes />} />
 
                 <Route path="pencarian" element={<Pencarian />} />
                 <Route path="kontak" element={<Kontak />} />
@@ -157,11 +165,14 @@ export default function App() {
                 <Route path="pengguna" element={<KelolaPengguna />} />
                 <Route path="laporan" element={<Laporan />} />
                 <Route path="audit-log" element={<AuditLog />} />
+                <Route path="bumdes" element={<KelolaBumdes />} />
+                <Route path="tanda-tangan" element={<TandaTangan />} />
                 <Route path="pengaturan" element={<PengaturanSitus />} />
               </Route>
             </Routes>
             </Suspense>
           </BatasGalat>
+          </PenyediaBahasa>
         </PenyediaAuth>
       </BrowserRouter>
     </QueryClientProvider>

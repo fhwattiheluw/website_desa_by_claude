@@ -14,7 +14,7 @@ pencadangan, dan prosedur pemulihan data ada pada
 | Lapisan | Teknologi | Lokasi |
 |---|---|---|
 | API | Laravel 13 (PHP 8.3+), Sanctum, SQLite/MySQL/PostgreSQL | [`backend/`](backend) |
-| Antarmuka | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query | [`frontend/`](frontend) |
+| Antarmuka | React 19, TypeScript, Vite, Tailwind CSS 4, TanStack Query, PWA | [`frontend/`](frontend) |
 | Dokumen | dompdf (PDF surat), bacon/bacon-qr-code (QR verifikasi) | `backend/app/Services` |
 
 Backend berperan sebagai API murni; frontend adalah aplikasi satu halaman yang
@@ -65,7 +65,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 75 uji, 340 asersi
+cd backend && ./vendor/bin/phpunit      # 89 uji, 405 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -118,6 +118,26 @@ Tugas terjadwal (daftarkan `php artisan schedule:run` pada cron server):
 Gateway WhatsApp bersifat opsional. Bila `WHATSAPP_GATEWAY_TOKEN` kosong,
 notifikasi tetap terkirim melalui surel dan alur layanan tidak terganggu.
 
+## Aplikasi web progresif
+
+Portal dapat dipasang di layar utama ponsel dan tetap terbuka saat jaringan
+terputus: kerangka aplikasi serta data publik yang pernah dibuka disajikan dari
+singgahan peramban, sedangkan halaman yang belum pernah dibuka menampilkan
+pemberitahuan luring. Pengajuan surat dan pengaduan tetap memerlukan koneksi.
+
+## Tanda tangan elektronik
+
+Metode penandatanganan dipilih lewat `TTE_DRIVER` pada `.env`:
+
+| Nilai | Perilaku |
+|---|---|
+| `internal` (bawaan) | Dokumen memuat spesimen tanda tangan pejabat dan diverifikasi lewat kode QR |
+| `psre` | Dokumen dikirim ke penyelenggara sertifikasi elektronik untuk ditandatangani |
+
+Bila `psre` dipilih namun kredensialnya belum lengkap, atau penyedia sedang
+gangguan, sistem otomatis kembali ke metode internal agar pelayanan surat tidak
+terhenti, dan kegagalannya tercatat pada audit log.
+
 ## Catatan keamanan dan perlindungan data
 
 - NIK warga dan kontak pelapor pengaduan disimpan terenkripsi; pencarian
@@ -141,4 +161,4 @@ notifikasi tetap terkirim melalui surel dan alur layanan tidak terganggu.
 | Fase 2 | Layanan surat daring | Terimplementasi (TTE tersertifikasi belum, lihat OI-02) |
 | — | Pemulihan akun, SEO, pencadangan | Terimplementasi |
 | Fase 3 | Partisipasi dan keterbukaan | Terimplementasi |
-| Fase 4 | Ekonomi desa dan penyempurnaan | Sebagian: direktori UMKM dan wisata sudah, PWA dan dwibahasa belum |
+| Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |

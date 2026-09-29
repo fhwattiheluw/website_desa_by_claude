@@ -84,3 +84,23 @@ export function useMeta({ judul, deskripsi, gambar, jenis = 'website' }: Meta) {
     )
   }, [judul, deskripsi, gambar, jenis])
 }
+
+/**
+ * Menyisipkan data terstruktur schema.org agar mesin pencari memahami jenis
+ * halaman: lembaga pemerintah, berita, agenda kegiatan, dan usaha lokal
+ * (REQ-F-SRC-005).
+ */
+export function useDataTerstruktur(data: Record<string, unknown> | null) {
+  useEffect(() => {
+    if (!data) return
+
+    const skrip = document.createElement('script')
+    skrip.type = 'application/ld+json'
+    skrip.dataset.sidesa = 'terstruktur'
+    skrip.textContent = JSON.stringify({ '@context': 'https://schema.org', ...data })
+
+    document.head.appendChild(skrip)
+
+    return () => skrip.remove()
+  }, [data])
+}

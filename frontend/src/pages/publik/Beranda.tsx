@@ -3,7 +3,7 @@ import { ArrowRight, CalendarDays, FileText, Megaphone, Users } from 'lucide-rea
 import { useBeranda } from '@/lib/kueri'
 import { angka, tanggal, tanggalRelatif } from '@/lib/format'
 import { pesanGalat } from '@/lib/api'
-import { useMeta } from '@/lib/meta'
+import { useDataTerstruktur, useMeta } from '@/lib/meta'
 import { Kartu, KartuStatistik } from '@/components/ui/Kartu'
 import { TautanTombol } from '@/components/ui/Tombol'
 import { GalatMuat, Rangka } from '@/components/ui/Status'
@@ -39,6 +39,27 @@ export function Beranda() {
       desa.tagline ??
       'Portal resmi pemerintah desa: informasi, transparansi anggaran, layanan administrasi daring, dan pengaduan masyarakat.',
   })
+
+  useDataTerstruktur(
+    desa.nama_desa
+      ? {
+          '@type': 'GovernmentOrganization',
+          name: `Pemerintah Desa ${desa.nama_desa}`,
+          url: window.location.origin,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: desa.alamat,
+            addressLocality: desa.kecamatan,
+            addressRegion: desa.provinsi,
+            postalCode: desa.kode_pos,
+            addressCountry: 'ID',
+          },
+          telephone: desa.telepon,
+          email: desa.email,
+          areaServed: `Desa ${desa.nama_desa}`,
+        }
+      : null,
+  )
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
 

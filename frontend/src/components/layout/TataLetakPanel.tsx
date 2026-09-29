@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  BarChart3, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquareWarning,
-  Settings, ShieldCheck, Users, X,
+  BarChart3, Building2, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquareWarning,
+  PenLine, Settings, ShieldCheck, Users, X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useProfilDesa } from '@/lib/kueri'
@@ -20,7 +20,9 @@ const MENU: ButirMenu[] = [
   { ke: '/admin/pengaduan', teks: 'Pengaduan', ikon: MessageSquareWarning, izin: ['pengaduan.lihat'] },
   { ke: '/admin/konten', teks: 'Konten', ikon: FileText, izin: ['konten.kelola'] },
   { ke: '/admin/apbdes', teks: 'APBDes', ikon: BarChart3, izin: ['apbdes.kelola'] },
+  { ke: '/admin/bumdes', teks: 'BUMDes', ikon: Building2, izin: ['bumdes.kelola'] },
   { ke: '/admin/pengguna', teks: 'Pengguna', ikon: Users, izin: ['pengguna.lihat'] },
+  { ke: '/admin/tanda-tangan', teks: 'Tanda Tangan', ikon: PenLine, izin: ['permohonan.tanda_tangan'] },
   { ke: '/admin/laporan', teks: 'Laporan Layanan', ikon: Files, izin: ['laporan.lihat'] },
   { ke: '/admin/audit-log', teks: 'Audit Log', ikon: ShieldCheck, izin: ['audit.lihat'] },
   { ke: '/admin/pengaturan', teks: 'Pengaturan', ikon: Settings, izin: ['pengaturan.kelola'] },

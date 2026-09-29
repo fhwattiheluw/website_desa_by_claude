@@ -3,7 +3,7 @@ import { ArrowLeft, CalendarDays, MapPin, Share2 } from 'lucide-react'
 import { useKonten } from '@/lib/kueri'
 import { pesanGalat } from '@/lib/api'
 import { tanggal } from '@/lib/format'
-import { useMeta } from '@/lib/meta'
+import { useDataTerstruktur, useMeta } from '@/lib/meta'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
 import { Lencana } from '@/components/ui/Lencana'
 import type { TipeKonten } from '@/types'
@@ -18,6 +18,31 @@ export function DetailKonten({ tipe }: { tipe: TipeKonten }) {
     gambar: data?.gambar?.url ?? null,
     jenis: 'article',
   })
+
+  useDataTerstruktur(
+    data
+      ? tipe === 'agenda'
+        ? {
+            '@type': 'Event',
+            name: data.judul,
+            description: data.ringkasan,
+            startDate: data.mulai_pada,
+            endDate: data.selesai_pada,
+            eventStatus: 'https://schema.org/EventScheduled',
+            location: { '@type': 'Place', name: data.lokasi },
+            organizer: { '@type': 'Organization', name: data.penyelenggara },
+          }
+        : {
+            '@type': 'NewsArticle',
+            headline: data.judul,
+            description: data.ringkasan,
+            datePublished: data.terbit_pada,
+            image: data.gambar?.url ? [data.gambar.url] : undefined,
+            author: { '@type': 'Organization', name: 'Pemerintah Desa' },
+            articleSection: data.kategori?.nama,
+          }
+      : null,
+  )
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
   if (isPending || !data) return <Pemuat />

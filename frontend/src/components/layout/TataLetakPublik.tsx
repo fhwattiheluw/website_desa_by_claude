@@ -4,6 +4,7 @@ import { Menu, Search, X } from 'lucide-react'
 import { useProfilDesa } from '@/lib/kueri'
 import { useAuth } from '@/lib/auth'
 import { Tombol } from '@/components/ui/Tombol'
+import { PengaturanTampilan } from '@/components/ui/PengaturanTampilan'
 
 /** Navigasi utama maksimal tujuh butir tingkat pertama (REQ-UI-003). */
 const TAHUN_BERJALAN = new Date().getFullYear()
@@ -74,6 +75,8 @@ export function TataLetakPublik() {
                 />
               </div>
             </form>
+
+            <PengaturanTampilan />
 
             {pengguna ? (
               <Tombol ukuran="kecil" onClick={() => navigasi(pengguna.petugas ? '/admin' : '/akun')}>
@@ -148,6 +151,7 @@ export function TataLetakPublik() {
               <li><Link to="/transparansi/apbdes" className="hover:text-desa-700">APBDes</Link></li>
               <li><Link to="/transparansi/statistik" className="hover:text-desa-700">Statistik Desa</Link></li>
               <li><Link to="/transparansi/produk-hukum" className="hover:text-desa-700">Produk Hukum</Link></li>
+              <li><Link to="/potensi/bumdes" className="hover:text-desa-700">BUMDes</Link></li>
               <li><Link to="/ppid" className="hover:text-desa-700">PPID</Link></li>
             </ul>
           </div>

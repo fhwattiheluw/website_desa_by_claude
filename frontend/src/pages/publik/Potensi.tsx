@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { MapPin, Phone, Store } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { MapPin, Phone, Plus, Store } from 'lucide-react'
 import { api, pesanGalat } from '@/lib/api'
 import { Kartu, IsiKartu } from '@/components/ui/Kartu'
 import { Isian } from '@/components/ui/Isian'
 import { Lencana } from '@/components/ui/Lencana'
 import { Paginasi } from '@/components/ui/Paginasi'
 import { GalatMuat, KondisiKosong, Rangka } from '@/components/ui/Status'
+import { useBahasa } from '@/lib/bahasa'
+import { useDataTerstruktur, useMeta } from '@/lib/meta'
 import type { Halaman } from '@/types'
 
 interface Umkm {
@@ -30,13 +33,49 @@ export function DirektoriUmkm() {
       (await api.get<Halaman<Umkm>>('/umkm', { params: { page: halaman, q: q || undefined } })).data,
   })
 
+  useMeta({
+    judul: 'Direktori UMKM Desa',
+    deskripsi: 'Produk dan usaha milik warga desa beserta kontak pelaku usaha yang bersedia dipublikasikan.',
+  })
+
+  // REQ-F-SRC-005: tiap usaha dikenali mesin pencari sebagai usaha lokal.
+  useDataTerstruktur(
+    data && data.data.length > 0
+      ? {
+          '@type': 'ItemList',
+          name: 'Direktori UMKM Desa',
+          itemListElement: data.data.map((usaha, indeks) => ({
+            '@type': 'ListItem',
+            position: indeks + 1,
+            item: {
+              '@type': 'LocalBusiness',
+              name: usaha.nama_usaha,
+              description: usaha.deskripsi ?? undefined,
+              address: usaha.alamat ?? undefined,
+              telephone: usaha.telepon ?? undefined,
+              image: usaha.foto ?? undefined,
+            },
+          })),
+        }
+      : null,
+  )
+
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl">Direktori UMKM Desa</h1>
-        <p className="mt-1 text-slate-600">
-          Produk dan usaha milik warga desa. Nomor kontak hanya ditampilkan bila pemilik usaha menyetujuinya.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl">Direktori UMKM Desa</h1>
+          <p className="mt-1 text-slate-600">
+            Produk dan usaha milik warga desa. Nomor kontak hanya ditampilkan bila pemilik usaha menyetujuinya.
+          </p>
+        </div>
+        {/* REQ-F-POT-002: pelaku usaha dapat mendaftar sendiri. */}
+        <Link
+          to="/potensi/umkm/daftar"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-desa-700 px-4 text-sm font-medium text-white hover:bg-desa-800"
+        >
+          <Plus aria-hidden className="size-4" /> Daftarkan Usaha
+        </Link>
       </header>
 
       <div className="max-w-md">
@@ -112,16 +151,19 @@ interface Wisata {
 }
 
 export function DestinasiWisata() {
+  const { t } = useBahasa()
   const { data, isPending, error } = useQuery({
     queryKey: ['wisata'],
     queryFn: async () => (await api.get<{ data: Wisata[] }>('/wisata')).data.data,
   })
 
+  useMeta({ judul: t('wisata.judul'), deskripsi: t('wisata.keterangan') })
+
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl">Wisata Desa</h1>
-        <p className="mt-1 text-slate-600">Destinasi dan daya tarik yang dikelola bersama masyarakat desa.</p>
+        <h1 className="text-2xl">{t('wisata.judul')}</h1>
+        <p className="mt-1 text-slate-600">{t('wisata.keterangan')}</p>
       </header>
 
       {error ? (
@@ -141,11 +183,11 @@ export function DestinasiWisata() {
                   <p className="mt-2 text-sm text-slate-600">{wisata.deskripsi}</p>
                   <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                     <div>
-                      <dt className="text-slate-600">Jam operasional</dt>
+                      <dt className="text-slate-600">{t('wisata.jam')}</dt>
                       <dd className="font-medium">{wisata.jam_operasional ?? '-'}</dd>
                     </div>
                     <div>
-                      <dt className="text-slate-600">Tarif</dt>
+                      <dt className="text-slate-600">{t('wisata.tarif')}</dt>
                       <dd className="font-medium">{wisata.tarif ?? '-'}</dd>
                     </div>
                   </dl>
@@ -156,7 +198,7 @@ export function DestinasiWisata() {
                       rel="noreferrer noopener"
                       className="mt-3 inline-block text-sm font-medium text-desa-700 underline underline-offset-2"
                     >
-                      Lihat pada peta
+                      {t('wisata.peta')}
                     </a>
                   )}
                 </IsiKartu>

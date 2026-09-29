@@ -25,6 +25,45 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /*
+    Pengaturan keterbacaan (REQ-UI-011). Ukuran teks diperbesar melalui ukuran
+    dasar dokumen agar seluruh satuan rem ikut menyesuaikan, bukan dengan
+    menimpa tiap komponen.
+  */
+  html[data-ukuran-teks='besar'] {
+    font-size: 125%;
+  }
+
+  /*
+    Mode kontras tinggi menggelapkan teks, menguatkan garis, dan menghitamkan
+    warna utama agar rasio kontras naik jauh di atas ambang 4,5:1.
+  */
+  html[data-kontras='tinggi'] {
+    --color-desa-50: #ffffff;
+    --color-desa-600: #0b4f4a;
+    --color-desa-700: #063330;
+    --color-desa-800: #042321;
+  }
+
+  html[data-kontras='tinggi'] body {
+    @apply bg-white text-slate-950;
+  }
+
+  html[data-kontras='tinggi'] .text-slate-500,
+  html[data-kontras='tinggi'] .text-slate-600 {
+    @apply text-slate-800;
+  }
+
+  html[data-kontras='tinggi'] .border-slate-100,
+  html[data-kontras='tinggi'] .border-slate-200,
+  html[data-kontras='tinggi'] .border-slate-300 {
+    @apply border-slate-600;
+  }
+
+  html[data-kontras='tinggi'] :focus-visible {
+    @apply outline-4 outline-slate-950;
+  }
+
   body {
     @apply bg-slate-50 text-slate-800 antialiased;
   }
