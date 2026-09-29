@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JenisLayanan;
 use App\Models\Konten;
+use App\Models\Pengaturan;
 use Illuminate\Http\Response;
 
 /**
@@ -99,6 +100,43 @@ class PetaSitusController extends Controller
         ];
 
         return response(implode("\n", $baris)."\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
+    /** REQ-F-SRC-006: umpan RSS untuk berita dan pengumuman. */
+    public function rss(string $tipe): Response
+    {
+        abort_unless(in_array($tipe, ['berita', 'pengumuman'], true), 404);
+
+        $basis = rtrim((string) config('app.frontend_url'), '/');
+        $namaDesa = Pengaturan::ambil('nama_desa', 'Desa');
+        $judulUmpan = $tipe === 'berita' ? "Berita Desa {$namaDesa}" : "Pengumuman Desa {$namaDesa}";
+
+        $konten = Konten::tayang()
+            ->where('tipe', $tipe)
+            ->latest('terbit_pada')
+            ->limit(50)
+            ->get();
+
+        $butir = $konten->map(fn (Konten $k) => implode("\n", [
+            '    <item>',
+            '      <title>'.htmlspecialchars($k->judul, ENT_XML1).'</title>',
+            '      <link>'.htmlspecialchars("{$basis}/{$k->tipe}/{$k->slug}", ENT_XML1).'</link>',
+            '      <guid isPermaLink="true">'.htmlspecialchars("{$basis}/{$k->tipe}/{$k->slug}", ENT_XML1).'</guid>',
+            '      <description>'.htmlspecialchars((string) $k->ringkasan, ENT_XML1).'</description>',
+            '      <pubDate>'.($k->terbit_pada ?? $k->created_at)->toRfc2822String().'</pubDate>',
+            '    </item>',
+        ]))->implode("\n");
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n"
+            .'<rss version="2.0"><channel>'."\n"
+            .'    <title>'.htmlspecialchars($judulUmpan, ENT_XML1).'</title>'."\n"
+            .'    <link>'.htmlspecialchars("{$basis}/{$tipe}", ENT_XML1).'</link>'."\n"
+            .'    <description>'.htmlspecialchars("Kabar terbaru dari portal resmi Desa {$namaDesa}.", ENT_XML1).'</description>'."\n"
+            .'    <language>id-ID</language>'."\n"
+            .$butir."\n"
+            .'</channel></rss>';
+
+        return response($xml, 200, ['Content-Type' => 'application/rss+xml; charset=UTF-8']);
     }
 
     private function url(string $lokasi, ?string $diubah, string $frekuensi, string $bobot): string

@@ -49,6 +49,15 @@ class LembagaSeeder extends Seeder
                 ],
             ],
             [
+                'nama' => 'BUMDes Sukamaju Mandiri', 'jenis' => 'bumdes',
+                'deskripsi' => 'Pengurus badan usaha milik desa yang mengelola unit usaha dan kerja sama ekonomi desa.',
+                'pengurus' => [
+                    ['Asep Saepudin', 'Direktur', null],
+                    ['Dewi Anggraeni', 'Sekretaris', null],
+                    ['Yuyun Yuningsih', 'Bendahara', null],
+                ],
+            ],
+            [
                 'nama' => 'Lembaga Pemberdayaan Masyarakat', 'jenis' => 'lpm',
                 'deskripsi' => 'Mitra pemerintah desa dalam perencanaan dan pelaksanaan pembangunan.',
                 'pengurus' => [['Endang Suherman', 'Ketua LPM', null]],

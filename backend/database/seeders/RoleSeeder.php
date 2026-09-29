@@ -28,6 +28,8 @@ class RoleSeeder extends Seeder
         'apbdes.kelola' => ['nama' => 'Mengelola data APBDes', 'grup' => 'transparansi'],
         'apbdes.publikasi' => ['nama' => 'Mempublikasikan APBDes', 'grup' => 'transparansi'],
         'statistik.kelola' => ['nama' => 'Mengelola statistik desa', 'grup' => 'transparansi'],
+        'bumdes.kelola' => ['nama' => 'Mengelola unit usaha dan kinerja BUMDes', 'grup' => 'transparansi'],
+        'bumdes.publikasi' => ['nama' => 'Mempublikasikan kinerja BUMDes', 'grup' => 'transparansi'],
         'pengguna.lihat' => ['nama' => 'Melihat daftar pengguna', 'grup' => 'pengguna'],
         'pengguna.verifikasi' => ['nama' => 'Memvalidasi NIK warga', 'grup' => 'pengguna'],
         'pengguna.kelola' => ['nama' => 'Mengelola akun dan peran', 'grup' => 'pengguna'],
@@ -48,7 +50,7 @@ class RoleSeeder extends Seeder
             'izin' => [
                 'dashboard.lihat', 'konten.kelola', 'permohonan.lihat', 'permohonan.verifikasi',
                 'permohonan.buat_loket', 'pengaduan.lihat', 'apbdes.kelola', 'statistik.kelola',
-                'pengguna.lihat', 'pengguna.verifikasi',
+                'bumdes.kelola', 'pengguna.lihat', 'pengguna.verifikasi',
             ],
         ],
         Role::VERIFIKATOR => [
@@ -68,7 +70,8 @@ class RoleSeeder extends Seeder
                 'permohonan.verifikasi', 'permohonan.setujui', 'permohonan.tanda_tangan',
                 'permohonan.buat_loket', 'surat.batalkan', 'laporan.lihat', 'pengaduan.lihat', 'pengaduan.kelola',
                 'pengaduan.disposisi', 'pengaduan.moderasi', 'apbdes.kelola', 'apbdes.publikasi',
-                'statistik.kelola', 'pengguna.lihat', 'pengguna.verifikasi', 'audit.lihat',
+                'statistik.kelola', 'bumdes.kelola', 'bumdes.publikasi',
+                'pengguna.lihat', 'pengguna.verifikasi', 'audit.lihat',
             ],
         ],
         Role::KADES => [

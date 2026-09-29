@@ -50,5 +50,12 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('unggah', fn (Request $request) => Limit::perMinute(20)
             ->by($request->user()?->id ?: $request->ip()));
+
+        // Kuota API data terbuka: cukup untuk pemakaian wajar, cukup ketat untuk
+        // mencegah pengambilan massal yang membebani server desa (REQ-API-005).
+        RateLimiter::for('terbuka', fn (Request $request) => [
+            Limit::perMinute(60)->by('terbuka:'.$request->ip()),
+            Limit::perDay(2000)->by('terbuka:'.$request->ip()),
+        ]);
     }
 }

@@ -21,6 +21,9 @@
         .ttd td { vertical-align: top; font-size: 10.5pt; }
         .ttd .kanan { width: 45%; text-align: center; }
         .ttd .nama { font-weight: bold; text-decoration: underline; margin-top: 62px; }
+        .ttd .nama-rapat { margin-top: 4px; }
+        .ttd .spesimen { margin-top: 6px; }
+        .ttd .spesimen img { max-height: 70px; }
         .qr { width: 92px; }
         .verifikasi { font-size: 7.5pt; color: #444; line-height: 1.3; }
         .catatan-kaki { margin-top: 26px; border-top: 1px solid #ccc; padding-top: 6px; font-size: 7.5pt; color: #555; }
@@ -81,13 +84,23 @@
             <td class="kanan">
                 {{ $desa['nama_desa'] ?? '-' }}, {{ $surat->tanggal_terbit->translatedFormat('d F Y') }}<br>
                 {!! $jabatan_penandatangan !!}
-                <div class="nama">{{ $penandatangan->name }}</div>
+                @if (! empty($spesimen))
+                    <div class="spesimen"><img src="{{ $spesimen }}" alt="Tanda tangan {{ $penandatangan->name }}"></div>
+                    <div class="nama nama-rapat">{{ $penandatangan->name }}</div>
+                @else
+                    <div class="nama">{{ $penandatangan->name }}</div>
+                @endif
             </td>
         </tr>
     </table>
 
     <div class="catatan-kaki">
-        Dokumen ini diterbitkan melalui sistem informasi desa dan sah tanpa memerlukan cap basah.
+        @if ($surat->metode_tanda_tangan === 'tte')
+            Dokumen ini ditandatangani secara elektronik menggunakan sertifikat elektronik yang diterbitkan
+            penyelenggara sertifikasi elektronik, sehingga sah tanpa memerlukan tanda tangan basah maupun cap basah.
+        @else
+            Dokumen ini diterbitkan melalui sistem informasi desa dan sah tanpa memerlukan cap basah.
+        @endif
         Keaslian dokumen dapat diperiksa pada laman verifikasi surat dengan kode di atas.
         Nomor tiket permohonan: {{ $permohonan->nomor_tiket }}.
     </div>

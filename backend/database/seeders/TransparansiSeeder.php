@@ -4,10 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\InformasiPublik;
 use App\Models\ItemStatistik;
+use App\Models\KinerjaBumdes;
 use App\Models\PeriodeStatistik;
 use App\Models\ProdukHukum;
 use App\Models\TahunAnggaran;
 use App\Models\Umkm;
+use App\Models\UnitUsaha;
 use App\Models\User;
 use App\Models\Wisata;
 use Illuminate\Database\Seeder;
@@ -22,6 +24,43 @@ class TransparansiSeeder extends Seeder
         $this->produkHukum();
         $this->informasiPublik();
         $this->potensi();
+        $this->bumdes();
+    }
+
+    private function bumdes(): void
+    {
+        $unit = [
+            ['Toko Sembako Desa', 'Penyediaan kebutuhan pokok dengan harga terjangkau bagi warga.', 'Asep Saepudin', '081234511133'],
+            ['Pengelolaan Air Bersih', 'Distribusi air bersih untuk 420 sambungan rumah di empat dusun.', 'Wawan Setiawan', '081234511144'],
+            ['Wisata Curug Sukamaju', 'Pengelolaan kawasan wisata air terjun beserta kios oleh-oleh.', 'Dewi Anggraeni', '081234511155'],
+            ['Simpan Pinjam Perempuan', 'Layanan keuangan mikro bagi kelompok usaha perempuan desa.', 'Yuyun Yuningsih', null],
+        ];
+
+        foreach ($unit as $urutan => [$nama, $deskripsi, $penanggungJawab, $kontak]) {
+            UnitUsaha::updateOrCreate(['slug' => str($nama)->slug()->toString()], [
+                'nama' => $nama,
+                'deskripsi' => $deskripsi,
+                'penanggung_jawab' => $penanggungJawab,
+                'kontak' => $kontak,
+                'aktif' => true,
+                'urutan' => $urutan,
+            ]);
+        }
+
+        $kinerja = [
+            [now()->year - 1, 486_000_000, 92_400_000, 27_700_000, 'Audit internal selesai.'],
+            [now()->year - 2, 402_500_000, 71_800_000, 21_500_000, 'Tahun pertama unit air bersih beroperasi penuh.'],
+        ];
+
+        foreach ($kinerja as [$tahun, $pendapatan, $laba, $kontribusi, $catatan]) {
+            KinerjaBumdes::updateOrCreate(['tahun' => $tahun], [
+                'pendapatan' => $pendapatan,
+                'laba_bersih' => $laba,
+                'kontribusi_pades' => $kontribusi,
+                'catatan' => $catatan,
+                'dipublikasikan' => true,
+            ]);
+        }
     }
 
     private function apbdes(): void

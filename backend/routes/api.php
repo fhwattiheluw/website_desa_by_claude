@@ -51,6 +51,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('umkm', [Publik\PotensiController::class, 'umkm']);
         Route::get('wisata', [Publik\PotensiController::class, 'wisata']);
+        Route::get('bumdes', Publik\BumdesController::class);
         Route::get('lembaga', [Publik\LembagaController::class, 'index']);
         Route::get('lembaga/{slug}', [Publik\LembagaController::class, 'show']);
     });
@@ -60,6 +61,16 @@ Route::prefix('v1')->group(function () {
         Route::post('pengaduan', [Publik\PengaduanController::class, 'store']);
         Route::post('permohonan-informasi', [Publik\PustakaController::class, 'ajukanInformasi']);
         Route::post('umkm/daftar', [Publik\PotensiController::class, 'daftarUmkm']);
+    });
+
+    /* ------------------------------------------------------- Data terbuka */
+    Route::prefix('terbuka')->middleware('throttle:terbuka')->group(function () {
+        Route::get('/', [Publik\DataTerbukaController::class, 'indeks']);
+        Route::get('statistik', [Publik\DataTerbukaController::class, 'statistik']);
+        Route::get('apbdes', [Publik\DataTerbukaController::class, 'daftarApbdes']);
+        Route::get('apbdes/{tahun}', [Publik\DataTerbukaController::class, 'apbdes'])->whereNumber('tahun');
+        Route::get('layanan', [Publik\DataTerbukaController::class, 'layanan']);
+        Route::get('produk-hukum', [Publik\DataTerbukaController::class, 'produkHukum']);
     });
 
     /* ------------------------------------------------------------ Autentikasi */
@@ -181,6 +192,27 @@ Route::prefix('v1')->group(function () {
         Route::delete('produk-hukum/{produkHukum}', [Admin\ReferensiController::class, 'hapusProdukHukum'])->middleware('izin:konten.kelola');
         Route::get('umkm/menunggu', [Admin\ReferensiController::class, 'umkmMenunggu'])->middleware('izin:konten.kelola');
         Route::post('umkm/{umkm}/verifikasi', [Admin\ReferensiController::class, 'verifikasiUmkm'])->middleware('izin:konten.kelola');
+
+        // Spesimen tanda tangan pejabat penanda tangan (REQ-F-SRT-017)
+        Route::prefix('tanda-tangan')->middleware('izin:permohonan.tanda_tangan')->group(function () {
+            Route::get('/', [Admin\TandaTanganController::class, 'status']);
+            Route::post('/', [Admin\TandaTanganController::class, 'simpan'])->middleware('throttle:unggah');
+            Route::get('pratinjau', [Admin\TandaTanganController::class, 'pratinjau']);
+            Route::delete('/', [Admin\TandaTanganController::class, 'hapus']);
+        });
+
+        // BUMDes: unit usaha dan kinerja
+        Route::prefix('bumdes')->group(function () {
+            Route::get('/', [Admin\BumdesController::class, 'index'])->middleware('izin:bumdes.kelola');
+            Route::post('unit', [Admin\BumdesController::class, 'simpanUnit'])->middleware('izin:bumdes.kelola');
+            Route::put('unit/{unitUsaha}', [Admin\BumdesController::class, 'simpanUnit'])->middleware('izin:bumdes.kelola');
+            Route::delete('unit/{unitUsaha}', [Admin\BumdesController::class, 'hapusUnit'])->middleware('izin:bumdes.kelola');
+            Route::post('kinerja', [Admin\BumdesController::class, 'simpanKinerja'])->middleware('izin:bumdes.kelola');
+            Route::post('kinerja/{kinerjaBumdes}/publikasi', [Admin\BumdesController::class, 'publikasikanKinerja'])
+                ->middleware('izin:bumdes.publikasi');
+            Route::delete('kinerja/{kinerjaBumdes}', [Admin\BumdesController::class, 'hapusKinerja'])
+                ->middleware('izin:bumdes.kelola');
+        });
 
         // Pengaturan situs dan audit
         Route::get('pengaturan', [Admin\PengaturanController::class, 'index'])->middleware('izin:pengaturan.kelola');

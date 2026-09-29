@@ -48,6 +48,15 @@ class PengaturanSeeder extends Seeder
                 'lat' => '-6.9147',
                 'lng' => '107.1425',
             ],
+            'bumdes' => [
+                'bumdes_nama' => 'BUMDes Sukamaju Mandiri',
+                'bumdes_deskripsi' => 'Badan Usaha Milik Desa yang mengelola potensi ekonomi desa untuk '
+                    .'meningkatkan pendapatan asli desa dan kesejahteraan masyarakat.',
+                'bumdes_tahun_berdiri' => '2019',
+                'bumdes_dasar_hukum' => 'Peraturan Desa Nomor 03 Tahun '.(now()->year - 1),
+                'bumdes_alamat' => 'Jalan Raya Sukamaju Nomor 14, Sukamaju, Cibeber',
+                'bumdes_kontak' => '081234511122',
+            ],
             'ppid' => [
                 'ppid_nama' => 'PPID Pembantu Desa Sukamaju',
                 'ppid_penanggung_jawab' => 'Sekretaris Desa',
