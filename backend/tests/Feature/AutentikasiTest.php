@@ -93,8 +93,8 @@ class AutentikasiTest extends TestCase
             ->assertJsonPath('errors.email.0', fn ($pesan) => str_contains($pesan, 'terkunci'));
     }
 
-    /** REQ-NF-SEC-009: pembatasan laju pada titik akhir masuk. */
-    public function test_pembatas_laju_menghentikan_percobaan_masuk_beruntun(): void
+    /** REQ-NF-SEC-009: pembatasan laju per akun pada titik akhir masuk. */
+    public function test_pembatas_laju_per_akun_menghentikan_percobaan_beruntun(): void
     {
         $warga = $this->buatWarga(['email' => 'target@contoh.id']);
 
@@ -104,6 +104,20 @@ class AutentikasiTest extends TestCase
 
         $this->postJson('/api/v1/auth/masuk', ['email' => $warga->email, 'password' => 'salah'])
             ->assertStatus(429);
+    }
+
+    /**
+     * Batas per alamat IP tidak boleh menjegal kantor desa yang berbagi satu
+     * koneksi: lima petugas berbeda tetap dapat masuk berurutan.
+     */
+    public function test_beberapa_akun_dari_satu_alamat_ip_tetap_dapat_masuk(): void
+    {
+        foreach (['operator', 'verifikator', 'sekdes', 'kades', 'admin'] as $peran) {
+            $petugas = $this->buatPengguna($peran);
+
+            $this->postJson('/api/v1/auth/masuk', ['email' => $petugas->email, 'password' => 'password'])
+                ->assertOk();
+        }
     }
 
     public function test_masuk_berhasil_mengembalikan_token_dan_daftar_izin(): void

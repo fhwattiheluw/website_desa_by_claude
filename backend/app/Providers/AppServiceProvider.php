@@ -28,9 +28,12 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)
             ->by($request->user()?->id ?: $request->ip()));
 
+        // Batas per akun dibuat ketat untuk menahan penebakan kata sandi, sedangkan
+        // batas per alamat IP lebih longgar karena satu kantor desa lazim berbagi
+        // satu koneksi internet (REQ-NF-SEC-009, CON-02).
         RateLimiter::for('masuk', fn (Request $request) => [
-            Limit::perMinute(5)->by('masuk:'.$request->ip()),
-            Limit::perMinute(5)->by('masuk:'.strtolower((string) $request->input('email'))),
+            Limit::perMinute(5)->by('masuk-akun:'.strtolower((string) $request->input('email'))),
+            Limit::perMinute(20)->by('masuk-ip:'.$request->ip()),
         ]);
 
         RateLimiter::for('registrasi', fn (Request $request) => Limit::perHour(5)->by($request->ip()));

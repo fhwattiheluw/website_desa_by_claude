@@ -46,10 +46,19 @@
     <table class="data">
         @foreach ($layanan->kolom_formulir as $kolom)
             @continue(($kolom['tipe'] ?? 'teks') === 'centang' || ($kolom['di_surat'] ?? true) === false)
+            @php
+                $isi = $data[$kolom['nama']] ?? null;
+
+                if (($kolom['tipe'] ?? null) === 'tanggal' && filled($isi)) {
+                    $isi = \Illuminate\Support\Carbon::parse($isi)->translatedFormat('d F Y');
+                } elseif (($kolom['tipe'] ?? null) === 'angka' && filled($isi)) {
+                    $isi = 'Rp'.number_format((float) $isi, 0, ',', '.');
+                }
+            @endphp
             <tr>
                 <td class="label">{{ $kolom['label'] }}</td>
                 <td class="pemisah">:</td>
-                <td>{{ $data[$kolom['nama']] ?? '-' }}</td>
+                <td>{{ filled($isi) ? $isi : '-' }}</td>
             </tr>
         @endforeach
     </table>
@@ -71,7 +80,7 @@
             </td>
             <td class="kanan">
                 {{ $desa['nama_desa'] ?? '-' }}, {{ $surat->tanggal_terbit->translatedFormat('d F Y') }}<br>
-                Kepala Desa {{ $desa['nama_desa'] ?? '-' }}
+                {!! $jabatan_penandatangan !!}
                 <div class="nama">{{ $penandatangan->name }}</div>
             </td>
         </tr>

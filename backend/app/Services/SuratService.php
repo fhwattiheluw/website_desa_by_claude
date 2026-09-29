@@ -130,6 +130,7 @@ class SuratService
             'data' => $permohonan->data_formulir,
             'penandatangan' => $penandatangan,
             'desa' => Pengaturan::semua(),
+            'jabatan_penandatangan' => $this->jabatanPenandatangan($penandatangan),
             'qr' => $this->qrDataUri($surat->kode_verifikasi),
         ])->render();
 
@@ -144,6 +145,21 @@ class SuratService
         $dompdf->render();
 
         return (string) $dompdf->output();
+    }
+
+    /**
+     * Jabatan yang tercetak pada blok tanda tangan. Sekretaris Desa
+     * menandatangani atas nama (a.n.) Kepala Desa (REQ-F-SRT-017).
+     */
+    public function jabatanPenandatangan(User $penandatangan): string
+    {
+        $namaDesa = Pengaturan::ambil('nama_desa', '-');
+
+        return match ($penandatangan->role?->kode) {
+            'kades' => "Kepala Desa {$namaDesa}",
+            'sekdes' => "a.n. Kepala Desa {$namaDesa}<br>Sekretaris Desa",
+            default => $penandatangan->role?->nama ?? 'Pejabat Desa',
+        };
     }
 
     /** REQ-F-SRT-015: kode QR menuju halaman verifikasi publik. */

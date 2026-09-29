@@ -1,0 +1,237 @@
+import { useMemo, useState, type FormEvent } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react'
+import { api, galatKolom, pesanGalat } from '@/lib/api'
+import { useDetailLayanan } from '@/lib/kueri'
+import { useAuth } from '@/lib/auth'
+import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
+import { AreaTeks, Berkas, Isian, KotakCentang, Pilihan } from '@/components/ui/Isian'
+import { Tombol } from '@/components/ui/Tombol'
+import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { GalatMuat, Pemuat } from '@/components/ui/Status'
+import type { KolomFormulir } from '@/types'
+
+/**
+ * Formulir permohonan dibangun dari definisi kolom milik setiap layanan
+ * (REQ-F-SRT-003), sehingga penambahan jenis surat tidak memerlukan
+ * perubahan kode antarmuka.
+ */
+export function AjukanSurat() {
+  const { slug = '' } = useParams()
+  const navigasi = useNavigate()
+  const { pengguna } = useAuth()
+  const { data: layanan, isPending, error } = useDetailLayanan(slug)
+
+  const [nilai, setNilai] = useState<Record<string, string | boolean>>({})
+  const [berkas, setBerkas] = useState<File[]>([])
+  const [galat, setGalat] = useState<Record<string, string>>({})
+  const [pesan, setPesan] = useState('')
+  const [mengirim, setMengirim] = useState(false)
+
+  // Data profil pengguna mengisi kolom yang bersesuaian (REQ-F-SRT-005).
+  const awal = useMemo<Record<string, string>>(
+    () => ({
+      nama_lengkap: pengguna?.nama ?? '',
+      alamat: pengguna?.alamat ?? '',
+      tempat_lahir: pengguna?.tempat_lahir ?? '',
+      tanggal_lahir: pengguna?.tanggal_lahir ?? '',
+      pekerjaan: pengguna?.pekerjaan ?? '',
+      jenis_kelamin: pengguna?.jenis_kelamin === 'L' ? 'Laki-laki' : pengguna?.jenis_kelamin === 'P' ? 'Perempuan' : '',
+    }),
+    [pengguna],
+  )
+
+  if (error) return <GalatMuat pesan={pesanGalat(error)} />
+  if (isPending || !layanan) return <Pemuat />
+
+  const ambil = (kolom: KolomFormulir): string | boolean =>
+    nilai[kolom.nama] ?? awal[kolom.nama] ?? (kolom.tipe === 'centang' ? false : '')
+
+  const ubah = (nama: string, isi: string | boolean) => setNilai((sebelum) => ({ ...sebelum, [nama]: isi }))
+
+  const kirim = async (peristiwa: FormEvent) => {
+    peristiwa.preventDefault()
+    setMengirim(true)
+    setGalat({})
+    setPesan('')
+
+    const muatan = new FormData()
+    muatan.append('layanan', layanan.slug)
+
+    for (const kolom of layanan.kolom_formulir ?? []) {
+      const isi = ambil(kolom)
+      muatan.append(`data_formulir[${kolom.nama}]`, typeof isi === 'boolean' ? (isi ? '1' : '0') : isi)
+    }
+
+    berkas.forEach((b, indeks) => {
+      muatan.append(`lampiran[${indeks}]`, b)
+      muatan.append(`label_lampiran[${indeks}]`, b.name)
+    })
+
+    try {
+      const { data } = await api.post('/permohonan', muatan, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      navigasi(`/akun/permohonan/${data.data.id}`, { state: { baru: true } })
+    } catch (kesalahan) {
+      const kolom = galatKolom(kesalahan)
+      setGalat(
+        Object.fromEntries(Object.entries(kolom).map(([kunci, isi]) => [kunci.replace('data_formulir.', ''), isi])),
+      )
+      setPesan(pesanGalat(kesalahan))
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } finally {
+      setMengirim(false)
+    }
+  }
+
+  if (!pengguna?.boleh_mengajukan) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        <Pemberitahuan jenis="peringatan" judul="Akun belum dapat mengajukan layanan">
+          Akun Anda belum diverifikasi petugas desa. Verifikasi NIK diperlukan sebelum Anda dapat mengajukan permohonan
+          surat. Hubungi kantor desa bila proses ini memakan waktu lebih dari satu hari kerja.
+        </Pemberitahuan>
+        <Link to="/akun" className="text-sm font-medium text-desa-700 hover:underline">
+          Kembali ke akun saya
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Link to="/layanan" className="inline-flex items-center gap-1.5 text-sm text-desa-700 hover:underline">
+        <ArrowLeft aria-hidden className="size-4" /> Kembali ke katalog layanan
+      </Link>
+
+      <header>
+        <h1 className="text-2xl">{layanan.nama}</h1>
+        <p className="mt-1 text-slate-600">{layanan.deskripsi}</p>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm text-slate-600">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock aria-hidden className="size-4" /> Selesai dalam {layanan.sla_hari_kerja} hari kerja
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <CheckCircle2 aria-hidden className="size-4" /> Tidak dipungut biaya
+          </span>
+        </div>
+      </header>
+
+      {pesan && <Pemberitahuan jenis="bahaya" judul="Permohonan belum dapat dikirim">{pesan}</Pemberitahuan>}
+
+      <Kartu>
+        <KepalaKartu judul="Persyaratan Berkas" deskripsi="Siapkan berkas berikut dalam bentuk foto atau pindaian." />
+        <IsiKartu>
+          <ul className="space-y-1.5">
+            {layanan.persyaratan.map((syarat) => (
+              <li key={syarat} className="flex items-start gap-2 text-sm text-slate-700">
+                <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-desa-600" />
+                {syarat}
+              </li>
+            ))}
+          </ul>
+        </IsiKartu>
+      </Kartu>
+
+      <form onSubmit={kirim}>
+        <Kartu>
+          <KepalaKartu judul="Data Permohonan" deskripsi="Kolom bertanda bintang wajib diisi." />
+          <IsiKartu className="space-y-5">
+            {(layanan.kolom_formulir ?? []).map((kolom) => {
+              const isi = ambil(kolom)
+              const galatKolomIni = galat[kolom.nama]
+
+              if (kolom.tipe === 'centang') {
+                return (
+                  <KotakCentang
+                    key={kolom.nama}
+                    label={kolom.label}
+                    checked={Boolean(isi)}
+                    onChange={(e) => ubah(kolom.nama, e.target.checked)}
+                    galat={galatKolomIni}
+                  />
+                )
+              }
+
+              if (kolom.tipe === 'pilihan') {
+                return (
+                  <Pilihan
+                    key={kolom.nama}
+                    label={kolom.label}
+                    required={kolom.wajib}
+                    value={String(isi)}
+                    onChange={(e) => ubah(kolom.nama, e.target.value)}
+                    kosong={`Pilih ${kolom.label.toLowerCase()}`}
+                    pilihan={(kolom.pilihan ?? []).map((opsi) => ({ nilai: opsi, teks: opsi }))}
+                    galat={galatKolomIni}
+                  />
+                )
+              }
+
+              if (kolom.tipe === 'teks_panjang') {
+                return (
+                  <AreaTeks
+                    key={kolom.nama}
+                    label={kolom.label}
+                    required={kolom.wajib}
+                    value={String(isi)}
+                    onChange={(e) => ubah(kolom.nama, e.target.value)}
+                    galat={galatKolomIni}
+                  />
+                )
+              }
+
+              return (
+                <Isian
+                  key={kolom.nama}
+                  label={kolom.label}
+                  required={kolom.wajib}
+                  value={String(isi)}
+                  onChange={(e) => ubah(kolom.nama, e.target.value)}
+                  type={kolom.tipe === 'tanggal' ? 'date' : kolom.tipe === 'angka' ? 'number' : 'text'}
+                  inputMode={kolom.tipe === 'nik' || kolom.tipe === 'kk' ? 'numeric' : undefined}
+                  maxLength={kolom.tipe === 'nik' || kolom.tipe === 'kk' ? 16 : undefined}
+                  petunjuk={
+                    kolom.tipe === 'nik' || kolom.tipe === 'kk' ? 'Masukkan 16 digit angka tanpa spasi.' : undefined
+                  }
+                  galat={galatKolomIni}
+                />
+              )
+            })}
+
+            <Berkas
+              label="Unggah berkas persyaratan"
+              multiple
+              accept="image/jpeg,image/png,application/pdf"
+              petunjuk="Maksimal 5 berkas, masing-masing 5 MB. Format JPG, PNG, atau PDF."
+              galat={galat['lampiran']}
+              onChange={(e) => setBerkas(Array.from(e.target.files ?? []).slice(0, 5))}
+            />
+
+            {berkas.length > 0 && (
+              <ul className="space-y-1 text-sm text-slate-600">
+                {berkas.map((b) => (
+                  <li key={b.name}>• {b.name}</li>
+                ))}
+              </ul>
+            )}
+          </IsiKartu>
+        </Kartu>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Tombol type="submit" ukuran="besar" memuat={mengirim}>
+            Kirim Permohonan
+          </Tombol>
+          <Tombol type="button" ragam="garis" ukuran="besar" onClick={() => navigasi('/layanan')}>
+            Batal
+          </Tombol>
+        </div>
+
+        <p className="mt-3 text-sm text-slate-500">
+          Dengan mengirim permohonan, Anda menyatakan data yang diisikan benar dan dapat dipertanggungjawabkan.
+        </p>
+      </form>
+    </div>
+  )
+}

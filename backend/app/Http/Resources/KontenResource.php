@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Konten */
 class KontenResource extends JsonResource
 {
+    use KoleksiSeragam;
+
     public function toArray(Request $request): array
     {
         return [

@@ -241,6 +241,22 @@ class PermohonanSuratTest extends TestCase
             ->assertJsonPath('status_keabsahan', 'dibatalkan');
     }
 
+    /** REQ-F-SRT-017: jabatan pada blok tanda tangan mengikuti peran penandatangan. */
+    public function test_jabatan_penandatangan_mengikuti_peran(): void
+    {
+        $surat = app(SuratService::class);
+
+        $this->assertSame(
+            'Kepala Desa Sukamaju',
+            $surat->jabatanPenandatangan($this->buatPengguna('kades')->load('role')),
+        );
+
+        $this->assertStringContainsString(
+            'a.n. Kepala Desa Sukamaju',
+            $surat->jabatanPenandatangan($this->buatPengguna('sekdes')->load('role')),
+        );
+    }
+
     private function prosesSampaiSelesai(User $warga): Permohonan
     {
         $permohonan = $this->ajukan($warga);

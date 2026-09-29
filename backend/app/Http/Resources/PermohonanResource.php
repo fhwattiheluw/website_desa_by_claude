@@ -9,6 +9,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /** @mixin Permohonan */
 class PermohonanResource extends JsonResource
 {
+    use KoleksiSeragam;
+
     public function toArray(Request $request): array
     {
         $petugas = (bool) $request->user()?->petugas();

@@ -140,6 +140,27 @@ class PortalPublikTest extends TestCase
         $this->getJson('/api/v1/pencarian?q=ab')->assertStatus(422);
     }
 
+    /**
+     * REQ-API-002: seluruh daftar berhalaman memakai bentuk respons yang sama,
+     * baik yang berasal dari koleksi resource maupun paginator biasa.
+     */
+    public function test_bentuk_respons_berhalaman_seragam(): void
+    {
+        $this->buatKonten();
+
+        $kunciWajib = ['data', 'current_page', 'last_page', 'per_page', 'total'];
+
+        foreach (['/api/v1/konten/berita', '/api/v1/umkm', '/api/v1/produk-hukum'] as $jalur) {
+            $respons = $this->getJson($jalur)->assertOk();
+
+            foreach ($kunciWajib as $kunci) {
+                $this->assertArrayHasKey($kunci, $respons->json(), "{$jalur} kehilangan kunci {$kunci}.");
+            }
+
+            $this->assertArrayNotHasKey('meta', $respons->json(), "{$jalur} masih menyarangkan info halaman di meta.");
+        }
+    }
+
     public function test_tajuk_keamanan_terpasang_pada_respons(): void
     {
         $this->getJson('/api/v1/beranda')
