@@ -14,6 +14,9 @@ API Laravel 13 untuk Sistem Informasi Desa Terpadu. Kebutuhan mengikat ada pada
   Menyembunyikan menu di antarmuka tidak pernah dianggap memadai.
 - **Data pribadi** (NIK, kontak pelapor) disimpan terenkripsi; pencarian memakai
   kolom hash terpisah. Jangan menambah kolom data pribadi tanpa pola yang sama.
+- **Formulir publik** memperoleh pelindungnya dari grup rute
+  (`throttle:formulir-publik` dan `captcha`), bukan dari masing-masing
+  pengendali. Tambahkan rute formulir publik baru ke grup itu.
 - **Respons daftar berhalaman** memakai bentuk seragam: kunci `data` beserta
   `current_page`, `last_page`, `per_page`, `total` di tingkat atas. Resource baru
   yang dipakai untuk daftar wajib memakai trait `KoleksiSeragam`.

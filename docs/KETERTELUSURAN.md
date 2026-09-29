@@ -54,12 +54,19 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-SEC-006 enkripsi data pribadi | Mutator terenkripsi pada `User::nik`, `Pengaduan::kontak_pelapor` | `test_warga_baru_terdaftar_...`, `test_warga_dapat_mengirim_pengaduan_...` |
 | REQ-NF-SEC-007 berkas di luar akar web | `MediaService` disk privat, unduhan bertanda tangan | `test_tautan_unduh_surat_berbatas_waktu_dan_bertanda_tangan` |
 | REQ-NF-SEC-009 pembatasan laju | `AppServiceProvider::daftarkanPembatasLaju` | `test_pembatas_laju_per_akun_...`, `test_formulir_publik_dibatasi_lajunya` |
-| REQ-NF-SEC-013 log peristiwa keamanan | `AuditLogger` pada masuk, gagal masuk, ubah peran | `OtorisasiTest` |
+| REQ-NF-SEC-013 log peristiwa keamanan | `AuditLogger` pada masuk, gagal masuk, ubah peran, ekspor laporan | `OtorisasiTest`, `DeteksiInsidenTest::test_ekspor_laporan_massal_...` |
+| REQ-NF-CMP-005 deteksi dan pelaporan insiden | `Services/DeteksiInsidenService`, `sidesa:pantau-anomali` tiap jam, prosedur 3x24 jam | `DeteksiInsidenTest` (6 uji), `docs/OPERASIONAL.md` bagian 8 |
+| REQ-NF-MNT-002 integrasi berkelanjutan | Pint, PHPUnit, tsc, oxlint, dan build pada setiap perubahan | `.github/workflows/ci.yml` |
+| REQ-NF-SEC-012 pemindaian dependensi | `composer audit` dan `npm audit --audit-level=high` pada CI dan mingguan | `.github/workflows/ci.yml`, `pemindaian-berkala.yml` |
+| REQ-NF-MNT-006 dokumentasi | Panduan instalasi (README), operasional, administrator, dan warga | `README.md`, `docs/OPERASIONAL.md`, `docs/PANDUAN-ADMINISTRATOR.md`, `docs/PANDUAN-WARGA.md` |
+| REQ-NF-CMP-001 kebijakan dan syarat | Kebijakan Privasi dan Syarat Penggunaan, tertaut pada kaki setiap halaman | `pages/publik/Halaman.tsx`, `components/layout/TataLetakPublik.tsx` |
+| REQ-SW-006 analitik menghormati privasi | Penghitung sendiri tanpa kuki, alamat IP, maupun pengenal pengunjung | `Services/AnalitikService`, `pages/admin/Analitik.tsx`, `AnalitikTest` (8 uji) |
+| REQ-SW-007, REQ-F-ADU-010 anti-penyalahgunaan | Pembatasan laju ditambah CAPTCHA yang diverifikasi di sisi server | `Services/Captcha/*`, `Http/Middleware/PeriksaCaptcha`, `CaptchaTest` (10 uji) |
 | REQ-NF-PRF-003 ukuran transfer | Pemuatan malas rute berat, berkas awal 109 kB gzip | Keluaran `npm run build` |
-| REQ-NF-MNT-001 cakupan uji | 58 uji, 274 asersi pada logika inti | `./vendor/bin/phpunit` |
-| REQ-NF-MNT-004 migrasi bernomor | 15 migrasi idempoten | `php artisan migrate:fresh --seed` |
-| REQ-NF-CMP-003 hak subjek data | Profil dapat diakses dan diperbarui pemilik akun | `AuthController::perbaruiProfil` |
-| REQ-NF-CMP-004 retensi | `sidesa:bersihkan-lampiran`, `sidesa:bersihkan-draf`, audit log 24 bulan | `PermohonanService::bersihkanLampiranKedaluwarsa`, `OperasionalTest::test_draf_kedaluwarsa_dibersihkan_terjadwal` |
+| REQ-NF-MNT-001 cakupan uji | 123 uji, 554 asersi pada logika inti | `./vendor/bin/phpunit` |
+| REQ-NF-MNT-004 migrasi bernomor | 19 migrasi idempoten | `php artisan migrate:fresh --seed` |
+| REQ-NF-CMP-003, REQ-F-USR-013 hak subjek data | Akses, koreksi, unduhan salinan, dan pengajuan penghapusan oleh pemilik akun | `AuthController::perbaruiProfil`, `Services/DataPribadiService`, `HakSubjekDataTest` (10 uji) |
+| REQ-NF-CMP-004 retensi | Lampiran 12 bulan, draf 7 hari, jejak audit 24 bulan, akun tidak aktif ditandai setelah 36 bulan | `Services/RetensiService`, `sidesa:bersihkan-audit-log`, `sidesa:tinjau-akun-tidak-aktif`, `HakSubjekDataTest::test_jejak_audit_melewati_24_bulan_dihapus` |
 | REQ-NF-REL-003, 004 RTO dan RPO | Cadangan harian dan mingguan, prosedur pemulihan berurut | `docs/OPERASIONAL.md` bagian 3, `OperasionalTest::test_perintah_pencadangan_...` |
 | REQ-UI-009 aksesibilitas WCAG 2.1 AA | Tautan lewati navigasi, label terkait, fokus terlihat, target 44 px, padanan tabel pada grafik | `components/ui/*`, `components/chart/GrafikBatang.tsx` |
 | REQ-UI-011 ukuran teks dan kontras | Pengaturan tersimpan per perangkat, diterapkan lewat atribut pada elemen akar | `lib/preferensi.ts`, `components/ui/PengaturanTampilan.tsx`, `index.css` |
@@ -74,27 +81,28 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 153 | M 112 · S 37 · C 4 |
-| Terimplementasi sebagian | 14 | M 10 · S 4 |
-| Belum diimplementasikan | 26 | M 5 · S 13 · C 8 |
+| Terimplementasi | 163 | M 122 · S 37 · C 4 |
+| Terimplementasi sebagian | 10 | M 5 · S 5 |
+| Belum diimplementasikan | 20 | S 12 · C 8 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
+
+**Tidak ada lagi kebutuhan berprioritas Must yang belum dikerjakan.** Lima butir
+Must yang tersisa berstatus sebagian; dua di antaranya (REQ-F-SRT-017 dan
+REQ-SW-004) tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada
+kode. Selebihnya menunggu pengukuran pada lingkungan setara produksi.
 
 ### 4.1 Terimplementasi sebagian
 
 | Kebutuhan | Prioritas | Keadaan saat ini |
 |---|:---:|---|
-| REQ-F-ADU-010 | M | Pembatasan laju sudah berlaku, CAPTCHA belum ada. |
+| REQ-F-ADM-010 | S | Halaman populer dan jumlah pembukaan laman sudah ada; jumlah pengunjung unik sengaja tidak dihitung karena memerlukan pengenalan pengunjung berulang, yang bertentangan dengan REQ-SW-006. |
 | REQ-F-BRD-003 | M | Struktur tampil sebagai daftar kartu, belum berupa bagan. |
 | REQ-F-BRD-004 | S | Baru berupa tautan ke peta eksternal, belum peta tersemat berpenanda. |
 | REQ-F-SRC-002 | S | Jenis, cuplikan, dan tanggal sudah ada; penyorotan kata kunci belum. |
 | REQ-F-SRC-004 | M | Metadata dipasang saat render; perayap tanpa JavaScript belum terlayani. |
 | REQ-F-SRT-017 | M | Jalur spesimen berjalan; penyedia tersertifikasi siap tetapi menunggu sertifikat (OI-02). |
-| REQ-F-USR-013 | M | Akses dan koreksi data sudah ada; unduh data dan pengajuan penghapusan belum. |
 | REQ-HW-002 | S | Unggah gambar berfungsi; atribut pemicu kamera belum dipasang. |
-| REQ-NF-CMP-001 | M | Kebijakan Privasi sudah ada; Syarat Penggunaan belum. |
-| REQ-NF-CMP-004 | M | Retensi lampiran dan draf berjalan; pembersihan audit log 24 bulan belum. |
-| REQ-NF-MNT-006 | M | README dan panduan operasional ada; panduan administrator dan warga terpisah belum. |
 | REQ-NF-SEC-008 | S | Validasi tipe asli dan penolakan berkas berisi skrip sudah ada; pemindai antivirus belum. |
 | REQ-SW-003 | M | Peta berupa tautan eksternal, belum peta tersemat. |
 | REQ-SW-004 | M | Integrasi penyedia TTE lengkap dan teruji, menunggu kredensial sungguhan. |
@@ -106,7 +114,6 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 | REQ-API-004 | S | Dokumentasi OpenAPI belum ada. |
 | REQ-API-006 | S | Pengenal korelasi pada respons galat belum ada. |
 | REQ-F-ADM-003 | S | Pengelola menu navigasi belum ada; menu masih ditetapkan di kode. |
-| REQ-F-ADM-010 | S | Statistik kunjungan belum ada. |
 | REQ-F-BRD-007 | S | Sambutan Kepala Desa belum ada. |
 | REQ-F-BRD-008 | C | Penunjuk arah/rute ke kantor desa belum ada. |
 | REQ-F-GAL-006 | S | Penyematan video dari penyedia eksternal belum ada. |
@@ -121,12 +128,7 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 | REQ-F-STA-004 | C | Pembanding antarperiode belum ada. |
 | REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
 | REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
-| REQ-NF-CMP-005 | M | Prosedur deteksi dan pelaporan insiden kebocoran belum ada. |
-| REQ-NF-MNT-002 | M | Pipeline integrasi berkelanjutan belum ada. |
 | REQ-NF-MNT-007 | S | Log terstruktur dengan pengenal korelasi belum ada. |
-| REQ-NF-SEC-012 | M | Pemindaian kerentanan dependensi otomatis belum ada (menyusul CI). |
-| REQ-SW-006 | M | Analitik web belum dipasang. |
-| REQ-SW-007 | M | Layanan CAPTCHA belum dipasang. |
 | REQ-UI-004 | S | Remah roti belum ada. |
 | REQ-UI-007 | S | Formulir panjang belum dibagi bertahap. |
 
@@ -139,7 +141,7 @@ dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
 `REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
 
 Yang sudah terukur sejauh ini: ukuran berkas awal 109 kB terkompresi
-(REQ-NF-PRF-003) dan cakupan uji otomatis 89 uji dengan 405 asersi pada logika
+(REQ-NF-PRF-003) dan cakupan uji otomatis 123 uji dengan 554 asersi pada logika
 bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
 uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
 
@@ -158,3 +160,11 @@ dikerjakan. Audit ulang menemukan daftar itu tidak lengkap: sejumlah kebutuhan
 tertutup oleh anotasi rentang seperti `REQ-F-USR-001..015` sehingga tampak
 terpenuhi padahal butir tertentu di dalamnya belum ada. Tabel di atas menggantikan
 daftar lama dan disusun dari penelusuran bukti per butir.
+
+Pemutakhiran berikutnya menutup seluruh butir Must yang terbuka: CAPTCHA
+(REQ-SW-007, REQ-F-ADU-010), Syarat Penggunaan (REQ-NF-CMP-001), hak subjek data
+(REQ-F-USR-013), retensi jejak audit dan peninjauan akun tidak aktif
+(REQ-NF-CMP-004), deteksi serta prosedur insiden kebocoran (REQ-NF-CMP-005),
+pipeline integrasi berkelanjutan (REQ-NF-MNT-002), pemindaian kerentanan
+dependensi (REQ-NF-SEC-012), analitik yang menghormati privasi (REQ-SW-006), dan
+panduan administrator serta warga yang terpisah (REQ-NF-MNT-006).

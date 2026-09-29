@@ -1,8 +1,9 @@
 # Panduan Operasional SIDESA
 
 Panduan bagi administrator sistem desa: penjadwalan tugas, pencadangan,
-pemulihan data, mode pemeliharaan, dan penempatan berkas saat produksi.
-Memenuhi REQ-F-ADM-006, REQ-F-ADM-007, REQ-F-ADM-008, dan REQ-NF-REL-003/004.
+pemulihan data, retensi, penanganan insiden kebocoran data, mode pemeliharaan,
+dan penempatan berkas saat produksi. Memenuhi REQ-F-ADM-006, REQ-F-ADM-007,
+REQ-F-ADM-008, REQ-NF-REL-003/004, REQ-NF-CMP-004, dan REQ-NF-CMP-005.
 
 ## 1. Penjadwal tugas
 
@@ -24,6 +25,9 @@ Tugas yang berjalan:
 | `sidesa:cadangkan --jenis=media` | Minggu 03.00 | Cadangan berkas media (REQ-F-ADM-006) |
 | `sidesa:segarkan-konten` | Tiap jam | Mengarsipkan pengumuman kedaluwarsa (BR-09) |
 | `sidesa:ulangi-notifikasi` | Tiap 15 menit | Percobaan ulang notifikasi gagal (REQ-F-NOT-003) |
+| `sidesa:pantau-anomali` | Tiap jam | Deteksi indikasi kebocoran data (REQ-NF-CMP-005) |
+| `sidesa:bersihkan-audit-log` | Tanggal 1, 03.30 | Retensi jejak audit 24 bulan (REQ-NF-CMP-004) |
+| `sidesa:tinjau-akun-tidak-aktif` | Tanggal 1, 04.00 | Menandai akun tidak aktif 36 bulan (REQ-NF-CMP-004) |
 
 Periksa jadwal aktif dengan `php artisan schedule:list`.
 
@@ -155,7 +159,141 @@ maksimal 4 jam per bulan (REQ-NF-REL-002).
 - **Jalankan ulang cache** setiap kali `.env` berubah, sebab konfigurasi yang
   ter-cache tidak membaca berkas `.env` lagi.
 
-## 6. Pemantauan minimum
+## 6. Kebijakan retensi data
+
+Retensi dijalankan otomatis oleh penjadwal (REQ-NF-CMP-004). Administrator tidak
+perlu menghapus apa pun secara manual.
+
+| Data | Masa simpan | Yang menjalankan |
+|---|---|---|
+| Lampiran berkas permohonan | 12 bulan setelah layanan selesai | `sidesa:bersihkan-lampiran` |
+| Draf permohonan | 7 hari sejak terakhir disunting | `sidesa:bersihkan-draf` |
+| Jejak audit | 24 bulan | `sidesa:bersihkan-audit-log` |
+| Akun warga tidak aktif | Ditandai untuk ditinjau setelah 36 bulan | `sidesa:tinjau-akun-tidak-aktif` |
+| Cadangan basis data dan media | 30 hari | `sidesa:cadangkan --retensi` |
+| Hitungan kunjungan laman | Tidak dibatasi (bukan data pribadi) | — |
+| Surat yang telah diterbitkan | Permanen sebagai arsip pemerintahan desa | — |
+
+Catatan penting:
+
+- **Akun tidak aktif tidak dinonaktifkan otomatis.** Penjadwal hanya memberi
+  tanda; petugas menyaringnya pada menu Pengguna dan memutuskan sendiri. Warga
+  desa memang dapat tidak memakai portal bertahun-tahun tanpa berpindah
+  domisili.
+- **Pemangkasan jejak audit ikut tercatat** sebagai entri `retensi_audit_log`,
+  sehingga penghapusan pun tetap dapat diperiksa.
+- **Surat yang sudah terbit tidak pernah dihapus**, termasuk ketika warga
+  meminta penghapusan data pribadi. Dasarnya UU 27/2022 Pasal 30 ayat (2):
+  penghapusan tidak berlaku atas data yang masih diperlukan untuk pelaksanaan
+  kewajiban hukum dan kearsipan. Kaitan surat dengan identitas pemohon diputus
+  melalui penganoniman akun.
+
+## 7. Permintaan hak subjek data
+
+Warga mengunduh salinan datanya sendiri kapan saja melalui menu **Akun Saya →
+Hak atas Data Pribadi**. Permintaan penghapusan masuk ke panel petugas pada menu
+**Hak Subjek Data** dan hanya dapat ditangani peran dengan izin
+`data_pribadi.kelola` (bawaannya Sekretaris Desa dan Administrator).
+
+Tenggat jawaban **3x24 jam** sejak permintaan masuk. Langkahnya:
+
+1. Buka menu **Hak Subjek Data**, baca alasan yang ditulis warga.
+2. Periksa apakah masih ada permohonan layanan yang berjalan atas nama warga
+   tersebut. Bila ada, **tolak** disertai alasan; warga dapat mengajukan lagi
+   setelah layanan selesai.
+3. Bila tidak ada, **setujui**. Sistem akan:
+   - menghapus NIK, nomor telepon, alamat, dan data kelahiran dari akun;
+   - mengganti nama akun menjadi penanda anonim dan menonaktifkannya;
+   - mencabut seluruh sesi warga tersebut;
+   - menghapus draf permohonan yang belum diajukan;
+   - melepas identitas pelapor dari pengaduan dan permohonan informasi publik.
+4. Keputusan apa pun tercatat pada audit log beserta pelaksananya.
+
+Tindakan ini **tidak dapat dibatalkan**. Bila ragu, tolak dahulu dengan alasan
+dan minta warga menegaskan permintaannya melalui kantor desa.
+
+## 8. Penanganan insiden kebocoran data
+
+Dasar: UU 27/2022 Pasal 46 — pengendali data pribadi wajib memberitahukan
+kebocoran kepada subjek data dan lembaga pelindungan data pribadi **paling
+lambat 3x24 jam sejak kebocoran diketahui**. Tenggat itu berjalan sejak
+diketahui, bukan sejak dipastikan, sehingga jam pertama menentukan.
+
+### 8.1 Deteksi
+
+Tiga lapis, dan ketiganya perlu ada:
+
+| Lapis | Sumber | Yang menandakan masalah |
+|---|---|---|
+| Otomatis | `sidesa:pantau-anomali`, tiap jam | Kegagalan masuk beruntun dari satu IP, pengunduhan data pribadi atau ekspor laporan berlebihan, perubahan peran bertubi-tubi |
+| Manual | Audit log pada panel petugas | Aksi di luar jam kerja, pelaku yang tidak biasa, entitas yang tidak lazim disentuh peran tersebut |
+| Laporan luar | Kanal pengaduan, surel resmi desa | Warga atau peneliti keamanan melaporkan data desa muncul di tempat lain |
+
+Ambang deteksi otomatis ada pada `app/Services/DeteksiInsidenService.php` dan
+dapat disesuaikan dengan besar desa. Peringatan dikirim ke surel seluruh
+Administrator serta surel resmi desa, dan tercatat sebagai entri audit
+`insiden_terdeteksi` — entri inilah bukti kapan insiden **diketahui**.
+
+Peringatan otomatis adalah indikasi, bukan kesimpulan. Yang menilai tetap
+manusia.
+
+### 8.2 Penanganan, jam per jam
+
+**Jam 0–1 — amankan dan catat**
+
+1. Catat waktu, siapa yang menemukan, dan dari mana. Mulai satu catatan
+   kronologis; seluruh langkah berikutnya ditulis di sana beserta jamnya.
+2. Hentikan kebocoran yang masih berjalan: cabut token akun yang diduga
+   disalahgunakan (`php artisan tinker` → `$u->tokens()->delete()`), nonaktifkan
+   akunnya melalui menu Pengguna, atau nyalakan mode pemeliharaan bila kebocoran
+   bersumber dari portal itu sendiri.
+3. **Jangan hapus apa pun**, termasuk berkas log. Audit log memang menolak
+   penyuntingan dan penghapusan; jaga agar berkas log server juga tidak dirotasi
+   paksa.
+4. Ambil cadangan basis data saat itu juga sebagai barang bukti:
+   `php artisan sidesa:cadangkan --jenis=basis-data`.
+
+**Jam 1–24 — telusuri cakupan**
+
+5. Tentukan **data apa** yang terbuka (NIK, kontak, alamat, berkas lampiran),
+   **berapa banyak** subjek data yang terdampak, dan **sejak kapan**. Audit log
+   menjadi sumber utamanya.
+6. Tentukan jalan masuknya: kredensial bocor, hak akses yang terlalu luas,
+   kelemahan perangkat lunak, atau kehilangan perangkat.
+7. Tutup jalan masuk itu. Bila berupa kelemahan dependensi, jalankan
+   `composer audit` dan `npm audit`, mutakhirkan, lalu tempatkan ulang.
+8. Laporkan kepada Kepala Desa. Keputusan pemberitahuan ada padanya sebagai
+   penanggung jawab pengendali data.
+
+**Jam 24–72 — beri tahu**
+
+9. Susun pemberitahuan tertulis kepada subjek data yang terdampak, memuat: data
+   apa yang terbuka, kapan terjadi, apa akibat yang mungkin timbul, apa yang
+   sudah dilakukan desa, dan apa yang sebaiknya warga lakukan (misalnya mengubah
+   kata sandi). Sampaikan melalui kanal kontak terdaftar; bila jumlahnya besar,
+   tambahkan pengumuman pada portal.
+10. Sampaikan pemberitahuan kepada lembaga pelindungan data pribadi sesuai
+    ketentuan yang berlaku, dengan tembusan kepada pemerintah kabupaten.
+11. Simpan salinan seluruh pemberitahuan beserta tanggal pengirimannya.
+
+**Setelah 72 jam — perbaiki**
+
+12. Tulis laporan penutup: kronologi, akar penyebab, dampak, tindakan, dan
+    perbaikan yang dijadwalkan.
+13. Jalankan perbaikannya: penyempitan hak akses, penurunan ambang deteksi,
+    penambahan uji otomatis yang menangkap kelemahan serupa.
+14. Uji pemulihan data berikutnya dimajukan agar prosedur benar-benar teruji.
+
+### 8.3 Yang tidak boleh dilakukan
+
+- Menunggu kepastian penuh sebelum mencatat waktu diketahui. Tenggat 3x24 jam
+  tidak berhenti selama penyelidikan.
+- Menghapus atau menyunting log untuk "merapikan" keadaan.
+- Memberi tahu sebagian subjek data saja karena sisanya sulit dihubungi.
+  Pemberitahuan menyeluruh tetap wajib diupayakan dan dicatat upayanya.
+- Menutup insiden tanpa menemukan akar penyebabnya.
+
+## 9. Pemantauan minimum
 
 | Yang dipantau | Cara | Ambang tindakan |
 |---|---|---|
@@ -164,3 +302,6 @@ maksimal 4 jam per bulan (REQ-NF-REL-002).
 | Notifikasi gagal | Tabel `notifikasi_log` status `gagal` | Lebih dari 20 dalam sehari |
 | Permohonan melampaui SLA | Dasbor panel petugas | Lebih dari 5 permohonan |
 | Ruang penyimpanan | `df -h` pada server | Sisa di bawah 20% |
+| Indikasi insiden | Audit log aksi `insiden_terdeteksi` | Satu entri saja — langsung tangani |
+| Permintaan hak subjek data | Panel petugas menu Hak Subjek Data | Ada permintaan melampaui tenggat |
+| Kerentanan dependensi | Alur kerja Pemindaian Berkala pada GitHub Actions | Alur kerja gagal |

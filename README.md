@@ -5,9 +5,15 @@ administrasi surat daring, dan kanal pengaduan masyarakat.
 
 Implementasi mengacu pada [Software Requirements Specification](docs/SRS-Website-Desa.md)
 (SRS-WDESA-001). Pemetaan tiap kebutuhan ke kode tersedia pada
-[matriks ketertelusuran](docs/KETERTELUSURAN.md), sedangkan penjadwalan tugas,
-pencadangan, dan prosedur pemulihan data ada pada
-[panduan operasional](docs/OPERASIONAL.md).
+[matriks ketertelusuran](docs/KETERTELUSURAN.md).
+
+| Dokumen | Untuk siapa |
+|---|---|
+| [SRS](docs/SRS-Website-Desa.md) | Perancang dan pemeriksa kebutuhan |
+| [Matriks ketertelusuran](docs/KETERTELUSURAN.md) | Peninjau dan auditor |
+| [Panduan operasional](docs/OPERASIONAL.md) | Administrator server: penjadwal, pencadangan, pemulihan, retensi, penanganan insiden |
+| [Panduan administrator](docs/PANDUAN-ADMINISTRATOR.md) | Petugas desa pemakai panel administrasi |
+| [Panduan warga](docs/PANDUAN-WARGA.md) | Warga pemakai portal |
 
 ## Arsitektur
 
@@ -65,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 89 uji, 405 asersi
+cd backend && ./vendor/bin/phpunit      # 123 uji, 554 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -75,7 +81,13 @@ Cakupan uji otomatis meliputi autentikasi dan penguncian akun, pemulihan kata
 sandi dan verifikasi surel, alur permohonan surat ujung-ke-ujung sampai PDF
 terbit, draf permohonan, penegakan hak akses antarperan, aturan bisnis (BR-01
 sampai BR-15), portal publik, pengaduan, sitemap dan robots, pencadangan,
-ekspor laporan, perhitungan SLA hari kerja, serta keunikan penomoran surat.
+ekspor laporan, perhitungan SLA hari kerja, keunikan penomoran surat, tantangan
+CAPTCHA pada formulir publik, hak subjek data beserta penganoniman akun,
+kebijakan retensi, deteksi indikasi insiden, dan analitik tanpa data pribadi.
+
+Seluruh pemeriksaan di atas juga dijalankan otomatis pada setiap perubahan
+melalui [alur kerja CI](.github/workflows/ci.yml), bersama pemindaian kerentanan
+dependensi (`composer audit` dan `npm audit`) yang diulang tiap pekan.
 
 ## Struktur
 
@@ -114,6 +126,9 @@ Tugas terjadwal (daftarkan `php artisan schedule:run` pada cron server):
 | `sidesa:cadangkan --jenis=basis-data` | Harian 02.30 | Cadangan basis data, retensi 30 hari (REQ-F-ADM-006) |
 | `sidesa:cadangkan --jenis=media` | Mingguan | Cadangan berkas media (REQ-F-ADM-006) |
 | `sidesa:ulangi-notifikasi` | Tiap 15 menit | Percobaan ulang notifikasi gagal (REQ-F-NOT-003) |
+| `sidesa:pantau-anomali` | Tiap jam | Deteksi indikasi kebocoran data (REQ-NF-CMP-005) |
+| `sidesa:bersihkan-audit-log` | Bulanan | Retensi jejak audit 24 bulan (REQ-NF-CMP-004) |
+| `sidesa:tinjau-akun-tidak-aktif` | Bulanan | Menandai akun tidak aktif 36 bulan (REQ-NF-CMP-004) |
 
 Gateway WhatsApp bersifat opsional. Bila `WHATSAPP_GATEWAY_TOKEN` kosong,
 notifikasi tetap terkirim melalui surel dan alur layanan tidak terganggu.
@@ -138,6 +153,42 @@ Bila `psre` dipilih namun kredensialnya belum lengkap, atau penyedia sedang
 gangguan, sistem otomatis kembali ke metode internal agar pelayanan surat tidak
 terhenti, dan kegagalannya tercatat pada audit log.
 
+## Anti-penyalahgunaan formulir publik
+
+Formulir pengaduan, permohonan informasi, dan pendaftaran UMKM dilindungi dua
+lapis: pembatasan laju pengiriman dan tantangan CAPTCHA yang selalu diverifikasi
+di sisi server. Penyedianya dipilih lewat `CAPTCHA_DRIVER`:
+
+| Nilai | Perilaku |
+|---|---|
+| `bawaan` (anjuran) | Soal aritmatika dalam kata, tanpa layanan luar, dapat dibacakan pembaca layar |
+| `turnstile` | Cloudflare Turnstile; token diverifikasi ke titik akhir resmi penyedia |
+| `nihil` | Dimatikan — hanya untuk pengembangan dan uji otomatis |
+
+Bila `turnstile` dipilih namun kuncinya belum lengkap, sistem kembali ke
+tantangan bawaan alih-alih membiarkan formulir tanpa pelindung.
+
+## Hak subjek data dan retensi
+
+Warga mengunduh salinan lengkap data pribadinya sendiri melalui **Akun Saya →
+Hak atas Data Pribadi**, dan dapat mengajukan penghapusan. Permintaan ditinjau
+petugas berizin `data_pribadi.kelola` dengan tenggat jawaban 3x24 jam.
+Persetujuan menghapus data pribadi, menganonimkan pengaduan, dan menonaktifkan
+akun; surat yang telah terbit tetap disimpan sebagai arsip dan hal itu
+dinyatakan terbuka kepada warga sebelum ia mengajukan permintaan.
+
+Retensi berjalan otomatis: lampiran 12 bulan, draf 7 hari, jejak audit 24 bulan,
+cadangan 30 hari, dan akun tidak aktif ditandai untuk ditinjau setelah 36 bulan
+tanpa dinonaktifkan sendiri oleh sistem.
+
+## Analitik
+
+Kunjungan dihitung sendiri oleh sistem, tanpa skrip pihak ketiga, tanpa kuki,
+dan tanpa menyimpan alamat IP maupun pengenal pengunjung. Yang tersimpan hanya
+jumlah pembukaan laman per jalur per hari; parameter kueri dipangkas dan laman
+akun serta panel petugas tidak dihitung. Angkanya tampil pada menu **Statistik
+Kunjungan**, dan penghitungan dapat dimatikan sepenuhnya lewat `ANALITIK_AKTIF`.
+
 ## Catatan keamanan dan perlindungan data
 
 - NIK warga dan kontak pelapor pengaduan disimpan terenkripsi; pencarian
@@ -151,6 +202,9 @@ terhenti, dan kegagalannya tercatat pada audit log.
   dipakai memetakan surel yang terdaftar.
 - Cadangan memuat data pribadi: simpan pada lokasi terenkripsi di wilayah
   Indonesia, lihat panduan operasional.
+- Indikasi kebocoran data dipantau tiap jam dan diperingatkan ke administrator;
+  prosedur penanganan 3x24 jam ada pada
+  [panduan operasional bagian 8](docs/OPERASIONAL.md#8-penanganan-insiden-kebocoran-data).
 - Sebelum peluncuran, kerjakan daftar periksa prarilis pada Lampiran C SRS.
 
 ## Status
@@ -162,8 +216,12 @@ terhenti, dan kegagalannya tercatat pada audit log.
 | — | Pemulihan akun, SEO, pencadangan | Terimplementasi |
 | Fase 3 | Partisipasi dan keterbukaan | Terimplementasi |
 | Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |
+| — | Kepatuhan UU PDP, CI, dan analitik | Terimplementasi: CAPTCHA, Syarat Penggunaan, hak subjek data, retensi jejak audit, deteksi insiden, pipeline CI beserta pemindaian dependensi, dan analitik tanpa data pribadi |
 
-Dari 218 kebutuhan pada SRS: 153 terimplementasi, 14 terimplementasi sebagian,
-26 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
-berlaku pada arsitektur yang dipilih. Rincian per butir beserta alasannya ada
-pada [bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).
+Dari 218 kebutuhan pada SRS: 163 terimplementasi, 10 terimplementasi sebagian,
+20 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
+berlaku pada arsitektur yang dipilih. **Tidak ada lagi kebutuhan berprioritas
+Must yang belum dikerjakan**; lima butir Must yang tersisa berstatus sebagian,
+dua di antaranya tertahan pada terbitnya sertifikat elektronik (OI-02). Rincian
+per butir beserta alasannya ada pada
+[bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).
