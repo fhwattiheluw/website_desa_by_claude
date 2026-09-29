@@ -162,3 +162,8 @@ terhenti, dan kegagalannya tercatat pada audit log.
 | — | Pemulihan akun, SEO, pencadangan | Terimplementasi |
 | Fase 3 | Partisipasi dan keterbukaan | Terimplementasi |
 | Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |
+
+Dari 218 kebutuhan pada SRS: 153 terimplementasi, 14 terimplementasi sebagian,
+26 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
+berlaku pada arsitektur yang dipilih. Rincian per butir beserta alasannya ada
+pada [bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).

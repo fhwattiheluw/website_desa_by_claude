@@ -67,13 +67,94 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-API-005 API data terbuka | Titik akhir hanya-baca berlisensi terbuka dengan kuota per alamat IP | `Api/Publik/DataTerbukaController`, `Fase4Test::test_api_data_terbuka_...` |
 | CON-02 koneksi tidak stabil | Aplikasi web progresif: kerangka aplikasi dan data publik tersinggah, halaman luring menjelaskan keadaan | `vite.config.ts` (VitePWA), `public/luring.html` |
 
-## 4. Kebutuhan yang belum diimplementasikan
+## 4. Status pemenuhan kebutuhan
 
-| Kebutuhan | Prioritas | Alasan |
-|---|---|---|
-| REQ-F-USR-009 (2FA petugas) | S | Menunggu keputusan kanal OTP; penguncian akun dan sesi pendek sudah berlaku |
-| REQ-F-ADM-003 (pengelola menu) | S | Menu masih ditetapkan di kode; dijadwalkan bersama penyempurnaan panel |
-| REQ-F-SRT-017 sertifikat PSrE aktif | M | Integrasi penyedia tersertifikasi sudah terpasang dan teruji terhadap penyedia tiruan; menyalakannya tinggal mengisi kredensial pada `.env` setelah sertifikat terbit (OI-02). Sampai saat itu berlaku jalur spesimen tanda tangan sebagaimana kalimat kedua REQ-F-SRT-017 |
-| REQ-F-SRT-023 pencetakan massal | C | Dijadwalkan setelah volume layanan stabil |
-| REQ-F-KNT-013 komentar artikel | C | Memerlukan kebijakan moderasi tambahan |
-| REQ-F-SRC-004 pada perayap tanpa JavaScript | M | Metadata dipasang saat render di peramban; prarender atau render sisi server dijadwalkan Fase 4 |
+Hasil audit menyeluruh terhadap 218 kebutuhan pada SRS, diverifikasi dengan
+menelusuri kode dan bukan sekadar mencocokkan anotasi.
+
+| Status | Jumlah | Rincian prioritas |
+|---|---:|---|
+| Terimplementasi | 153 | M 112 · S 37 · C 4 |
+| Terimplementasi sebagian | 14 | M 10 · S 4 |
+| Belum diimplementasikan | 26 | M 5 · S 13 · C 8 |
+| Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
+| Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
+
+### 4.1 Terimplementasi sebagian
+
+| Kebutuhan | Prioritas | Keadaan saat ini |
+|---|:---:|---|
+| REQ-F-ADU-010 | M | Pembatasan laju sudah berlaku, CAPTCHA belum ada. |
+| REQ-F-BRD-003 | M | Struktur tampil sebagai daftar kartu, belum berupa bagan. |
+| REQ-F-BRD-004 | S | Baru berupa tautan ke peta eksternal, belum peta tersemat berpenanda. |
+| REQ-F-SRC-002 | S | Jenis, cuplikan, dan tanggal sudah ada; penyorotan kata kunci belum. |
+| REQ-F-SRC-004 | M | Metadata dipasang saat render; perayap tanpa JavaScript belum terlayani. |
+| REQ-F-SRT-017 | M | Jalur spesimen berjalan; penyedia tersertifikasi siap tetapi menunggu sertifikat (OI-02). |
+| REQ-F-USR-013 | M | Akses dan koreksi data sudah ada; unduh data dan pengajuan penghapusan belum. |
+| REQ-HW-002 | S | Unggah gambar berfungsi; atribut pemicu kamera belum dipasang. |
+| REQ-NF-CMP-001 | M | Kebijakan Privasi sudah ada; Syarat Penggunaan belum. |
+| REQ-NF-CMP-004 | M | Retensi lampiran dan draf berjalan; pembersihan audit log 24 bulan belum. |
+| REQ-NF-MNT-006 | M | README dan panduan operasional ada; panduan administrator dan warga terpisah belum. |
+| REQ-NF-SEC-008 | S | Validasi tipe asli dan penolakan berkas berisi skrip sudah ada; pemindai antivirus belum. |
+| REQ-SW-003 | M | Peta berupa tautan eksternal, belum peta tersemat. |
+| REQ-SW-004 | M | Integrasi penyedia TTE lengkap dan teruji, menunggu kredensial sungguhan. |
+
+### 4.2 Belum diimplementasikan
+
+| Kebutuhan | Prioritas | Keterangan |
+|---|:---:|---|
+| REQ-API-004 | S | Dokumentasi OpenAPI belum ada. |
+| REQ-API-006 | S | Pengenal korelasi pada respons galat belum ada. |
+| REQ-F-ADM-003 | S | Pengelola menu navigasi belum ada; menu masih ditetapkan di kode. |
+| REQ-F-ADM-010 | S | Statistik kunjungan belum ada. |
+| REQ-F-BRD-007 | S | Sambutan Kepala Desa belum ada. |
+| REQ-F-BRD-008 | C | Penunjuk arah/rute ke kantor desa belum ada. |
+| REQ-F-GAL-006 | S | Penyematan video dari penyedia eksternal belum ada. |
+| REQ-F-KNT-009 | C | Penghitung dibaca sudah ada, daftar "Terpopuler" belum. |
+| REQ-F-KNT-012 | S | Titik akhir kalender sudah ada di API, tampilan kalender bulanan belum dibuat. |
+| REQ-F-KNT-013 | C | Komentar artikel belum ada. |
+| REQ-F-NOT-005 | S | Notifikasi dalam aplikasi (lonceng) belum ada. |
+| REQ-F-NOT-006 | S | Pengaturan preferensi kanal notifikasi belum ada. |
+| REQ-F-PID-007 | C | Pengajuan keberatan atas penolakan informasi belum ada. |
+| REQ-F-POT-007 | C | Produk unggulan bergilir di beranda belum ada. |
+| REQ-F-SRT-023 | C | Pencetakan dan pengunduhan massal belum ada. |
+| REQ-F-STA-004 | C | Pembanding antarperiode belum ada. |
+| REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
+| REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
+| REQ-NF-CMP-005 | M | Prosedur deteksi dan pelaporan insiden kebocoran belum ada. |
+| REQ-NF-MNT-002 | M | Pipeline integrasi berkelanjutan belum ada. |
+| REQ-NF-MNT-007 | S | Log terstruktur dengan pengenal korelasi belum ada. |
+| REQ-NF-SEC-012 | M | Pemindaian kerentanan dependensi otomatis belum ada (menyusul CI). |
+| REQ-SW-006 | M | Analitik web belum dipasang. |
+| REQ-SW-007 | M | Layanan CAPTCHA belum dipasang. |
+| REQ-UI-004 | S | Remah roti belum ada. |
+| REQ-UI-007 | S | Formulir panjang belum dibagi bertahap. |
+
+### 4.3 Perlu pengukuran, pengujian, atau penyiapan server
+
+Kebutuhan berikut bukan sesuatu yang diwujudkan dengan menulis kode. Pemenuhannya
+dibuktikan melalui pengukuran, uji penerimaan, atau konfigurasi saat sistem
+dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
+
+`REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
+
+Yang sudah terukur sejauh ini: ukuran berkas awal 109 kB terkompresi
+(REQ-NF-PRF-003) dan cakupan uji otomatis 89 uji dengan 405 asersi pada logika
+bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
+uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
+
+### 4.4 Tidak berlaku pada arsitektur ini
+
+| Kebutuhan | Alasan |
+|---|---|
+| REQ-HW-003 | Dinyatakan di luar lingkup oleh SRS sendiri (prioritas W). |
+| REQ-NF-SEC-004 | API memakai token tanpa sesi, sehingga tidak ada operasi tulis berbasis sesi. |
+| REQ-NF-SEC-015 | Tidak ada kuki sesi; token disimpan klien dan dikirim lewat tajuk Authorization. |
+
+### 4.5 Catatan koreksi
+
+Versi sebelumnya dokumen ini hanya mencantumkan tujuh butir sebagai belum
+dikerjakan. Audit ulang menemukan daftar itu tidak lengkap: sejumlah kebutuhan
+tertutup oleh anotasi rentang seperti `REQ-F-USR-001..015` sehingga tampak
+terpenuhi padahal butir tertentu di dalamnya belum ada. Tabel di atas menggantikan
+daftar lama dan disusun dari penelusuran bukti per butir.
