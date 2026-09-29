@@ -158,7 +158,7 @@ terhenti, dan kegagalannya tercatat pada audit log.
 | Fase SRS | Lingkup | Status |
 |---|---|---|
 | Fase 1 | Informasi dan transparansi | Terimplementasi |
-| Fase 2 | Layanan surat daring | Terimplementasi (TTE tersertifikasi belum, lihat OI-02) |
+| Fase 2 | Layanan surat daring | Terimplementasi, termasuk penandatanganan dengan spesimen tanda tangan; sertifikat PSrE menunggu OI-02 |
 | — | Pemulihan akun, SEO, pencadangan | Terimplementasi |
 | Fase 3 | Partisipasi dan keterbukaan | Terimplementasi |
 | Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |
