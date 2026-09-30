@@ -77,6 +77,7 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-CMP-003, REQ-F-USR-013 hak subjek data | Akses, koreksi, unduhan salinan, dan pengajuan penghapusan oleh pemilik akun | `AuthController::perbaruiProfil`, `Services/DataPribadiService`, `HakSubjekDataTest` (10 uji) |
 | REQ-NF-CMP-004 retensi | Lampiran 12 bulan, draf 7 hari, jejak audit 24 bulan, akun tidak aktif ditandai setelah 36 bulan | `Services/RetensiService`, `sidesa:bersihkan-audit-log`, `sidesa:tinjau-akun-tidak-aktif`, `HakSubjekDataTest::test_jejak_audit_melewati_24_bulan_dihapus` |
 | REQ-NF-REL-003, 004 RTO dan RPO | Cadangan harian dan mingguan, prosedur pemulihan berurut | `docs/OPERASIONAL.md` bagian 3, `OperasionalTest::test_perintah_pencadangan_...` |
+| REQ-UI-007 formulir bertahap | Formulir 10–14 kolom dipecah menjadi langkah berisi paling banyak lima kolom, masing-masing diperiksa sebelum lanjut; galat dari server memindahkan pengisi ke langkah yang bermasalah | `pages/warga/AjukanSurat.tsx`, `components/ui/Langkah.tsx`, `lib/validasiFormulir.ts` |
 | REQ-UI-009 aksesibilitas WCAG 2.1 AA | Tautan lewati navigasi, label terkait, fokus terlihat, target 44 px, padanan tabel pada grafik | `components/ui/*`, `components/chart/GrafikBatang.tsx` |
 | REQ-UI-011 ukuran teks dan kontras | Pengaturan tersimpan per perangkat, diterapkan lewat atribut pada elemen akar | `lib/preferensi.ts`, `components/ui/PengaturanTampilan.tsx`, `index.css` |
 | REQ-UI-012 dwibahasa | Halaman profil dan wisata tersedia dalam bahasa Indonesia dan Inggris | `lib/bahasa.ts`, `components/layout/PenyediaBahasa.tsx` |
@@ -90,9 +91,9 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 176 | M 125 · S 47 · C 4 |
+| Terimplementasi | 177 | M 125 · S 48 · C 4 |
 | Terimplementasi sebagian | 4 | M 2 · S 2 |
-| Belum diimplementasikan | 13 | S 5 · C 8 |
+| Belum diimplementasikan | 12 | S 4 · C 8 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
 
@@ -127,7 +128,6 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 | REQ-F-STA-004 | C | Pembanding antarperiode belum ada. |
 | REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
 | REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
-| REQ-UI-007 | S | Formulir panjang belum dibagi bertahap. |
 
 ### 4.3 Perlu pengukuran, pengujian, atau penyiapan server
 

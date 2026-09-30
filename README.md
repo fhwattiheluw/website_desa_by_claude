@@ -284,9 +284,10 @@ tingkat keparahan dan pengenal korelasi.
 | — | Metadata halaman untuk perayap | Terimplementasi: kerangka aplikasi disajikan Laravel lengkap dengan judul, deskripsi, kanonik, Open Graph, dan data terstruktur |
 | — | Penelusuran galat dan penyempurnaan antarmuka | Terimplementasi: kode galat beserta pengenal korelasi, log terstruktur, remah roti, penyorotan kata kunci, pengambilan lampiran lewat kamera, dan sambutan kepala desa |
 | — | Notifikasi dan kalender | Terimplementasi: lonceng pekerjaan baru bagi petugas, preferensi kanal notifikasi bagi warga, dan kalender agenda bulanan |
+| — | Formulir permohonan bertahap | Terimplementasi: pengisian dipecah menjadi langkah dengan indikator kemajuan, validasi per langkah, dan langkah tinjau sebelum kirim |
 
-Dari 218 kebutuhan pada SRS: 176 terimplementasi, 4 terimplementasi sebagian,
-13 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
+Dari 218 kebutuhan pada SRS: 177 terimplementasi, 4 terimplementasi sebagian,
+12 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
 berlaku pada arsitektur yang dipilih. **Seluruh kebutuhan Must yang dapat
 dikerjakan sudah dikerjakan**; dua butir Must yang tersisa — REQ-F-SRT-017 dan
 REQ-SW-004 — tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada
