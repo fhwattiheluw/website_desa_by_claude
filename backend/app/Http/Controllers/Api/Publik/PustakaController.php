@@ -24,11 +24,7 @@ class PustakaController extends Controller
             ->with('dicabutOleh:id,jenis,nomor,tahun,judul', 'media')
             ->when($request->filled('jenis'), fn ($q) => $q->where('jenis', $request->string('jenis')))
             ->when($request->filled('tahun'), fn ($q) => $q->where('tahun', $request->integer('tahun')))
-            ->when($request->filled('q'), fn ($q) => $q->where(
-                fn ($w) => $w->where('judul', 'like', '%'.$request->string('q').'%')
-                    ->orWhere('tentang', 'like', '%'.$request->string('q').'%')
-                    ->orWhere('nomor', 'like', '%'.$request->string('q').'%')
-            ))
+            ->cariTeks(['judul', 'tentang', 'nomor'], $request->string('q')->toString())
             ->orderByDesc('tahun')
             ->orderByDesc('nomor')
             ->paginate(15)

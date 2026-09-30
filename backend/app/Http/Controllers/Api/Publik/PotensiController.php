@@ -16,10 +16,7 @@ class PotensiController extends Controller
         $data = Umkm::tayang()
             ->with('media')
             ->when($request->filled('kategori'), fn ($q) => $q->where('kategori', $request->string('kategori')))
-            ->when($request->filled('q'), fn ($q) => $q->where(
-                fn ($w) => $w->where('nama_usaha', 'like', '%'.$request->string('q').'%')
-                    ->orWhere('deskripsi', 'like', '%'.$request->string('q').'%')
-            ))
+            ->cariTeks(['nama_usaha', 'deskripsi'], $request->string('q')->toString())
             ->orderBy('nama_usaha')
             ->paginate(12)
             ->through(fn (Umkm $u) => [

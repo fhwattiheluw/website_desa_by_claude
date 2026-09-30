@@ -24,7 +24,7 @@ class KontenController extends Controller
         $data = Konten::with('kategori', 'penulis', 'gambar')
             ->when($request->filled('tipe'), fn ($q) => $q->where('tipe', $request->string('tipe')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
-            ->when($request->filled('q'), fn ($q) => $q->where('judul', 'like', '%'.$request->string('q').'%'))
+            ->cariTeks('judul', $request->string('q')->toString())
             ->latest()
             ->paginate(15)
             ->withQueryString();

@@ -293,7 +293,53 @@ manusia.
   Pemberitahuan menyeluruh tetap wajib diupayakan dan dicatat upayanya.
 - Menutup insiden tanpa menemukan akar penyebabnya.
 
-## 9. Pemantauan minimum
+## 9. Pilihan basis data
+
+Sistem diuji otomatis pada **SQLite** dan **PostgreSQL**; **MySQL/MariaDB** juga
+didukung oleh migrasi dan perintah pencadangan. Alur kerja CI menjalankan seluruh
+uji pada SQLite dan PostgreSQL sekaligus, karena perbedaan keduanya tidak selalu
+memunculkan galat — lihat catatan `LIKE` di bawah.
+
+| Mesin | Kapan dipakai |
+|---|---|
+| SQLite | Pengembangan lokal dan uji otomatis. Cukup pula untuk desa kecil dengan satu server |
+| MySQL/MariaDB | Pilihan paling lazim pada hosting desa di Indonesia |
+| PostgreSQL | Bila penyedia menawarkannya sebagai layanan terkelola |
+
+Berpindah mesin cukup mengubah `.env` lalu menjalankan `php artisan migrate`.
+Perintah `sidesa:cadangkan` memilih sendiri `mysqldump`, `pg_dump`, atau salinan
+berkas sesuai koneksi yang aktif.
+
+### Catatan `LIKE` yang mudah terlewat
+
+`LIKE` mengabaikan besar kecil huruf di SQLite dan MySQL, tetapi **tidak** di
+PostgreSQL. Bila kueri pencarian ditulis dengan `LIKE` apa adanya, pencarian
+"Jembatan" berhenti menemukan "jembatan" begitu desa berpindah ke PostgreSQL —
+tanpa galat, tanpa peringatan, hanya hasil kosong.
+
+Karena itu seluruh pencarian teks memakai makro `cariTeks` yang terdaftar pada
+`AppServiceProvider`. Makro itu memilih `ILIKE` pada PostgreSQL dan `LIKE` pada
+mesin lain. **Jangan menulis `->where($kolom, 'like', ...)` langsung**; pakai
+`->cariTeks($kolom, $kata)`.
+
+Hal serupa berlaku pada klausa `HAVING`: PostgreSQL tidak mengenali alias kolom
+keluaran di dalamnya, sehingga agregatnya perlu diulang (`havingRaw('COUNT(*) > ?')`).
+
+### Catatan bila memakai Supabase
+
+Supabase Cloud **tidak memiliki region Indonesia**; yang terdekat Singapura. Itu
+berbenturan dengan CON-08 dan REQ-NF-CMP-007 (PP 71/2019) yang mewajibkan data
+beserta cadangannya berada di pusat data wilayah Indonesia. Supabase hanya dapat
+dipakai bila dipasang sendiri (*self-hosted*) pada penyedia dalam negeri, dengan
+konsekuensi pemeliharaan yang perlu dihitung terhadap CON-07.
+
+Bila tetap dipakai, sambungkan lewat **session pooler (porta 5432)**, bukan
+transaction pooler (6543): Laravel memakai *prepared statement* yang tidak
+didukung penuh pada mode transaksi. Lapisan Supabase lainnya — Auth, PostgREST,
+Realtime, RLS — tidak terpakai, karena alur permohonan, RBAC, audit log,
+penomoran surat, dan penerbitan PDF sudah ditegakkan di Laravel.
+
+## 10. Pemantauan minimum
 
 | Yang dipantau | Cara | Ambang tindakan |
 |---|---|---|

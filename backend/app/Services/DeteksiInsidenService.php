@@ -86,7 +86,9 @@ class DeteksiInsidenService
             ->where('created_at', '>=', $sejak)
             ->whereNotNull($kolom)
             ->groupBy($kolom)
-            ->having('jumlah', '>', $batas)
+            // Diulang sebagai agregat, bukan merujuk alias `jumlah`: PostgreSQL
+            // tidak mengenali alias kolom keluaran di dalam klausa HAVING.
+            ->havingRaw('COUNT(*) > ?', [$batas])
             ->get()
             ->map(fn ($baris) => [
                 'indikasi' => $aksi,

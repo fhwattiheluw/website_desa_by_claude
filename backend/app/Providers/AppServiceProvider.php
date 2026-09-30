@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -17,6 +18,35 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->daftarkanPembatasLaju();
+        $this->daftarkanPencarianTeks();
+    }
+
+    /**
+     * Pencarian teks yang tidak membedakan huruf besar dan kecil pada seluruh
+     * mesin basis data (REQ-F-SRC-001).
+     *
+     * `LIKE` di SQLite dan MySQL mengabaikan besar kecil huruf, tetapi di
+     * PostgreSQL tidak. Tanpa penyeragaman ini, pencarian "Berita" tidak
+     * menemukan "berita" begitu desa memakai PostgreSQL — gagal diam-diam,
+     * tanpa galat apa pun.
+     */
+    private function daftarkanPencarianTeks(): void
+    {
+        Builder::macro('cariTeks', function (string|array $kolom, ?string $kata) {
+            /** @var Builder $this */
+            if (blank($kata)) {
+                return $this;
+            }
+
+            $operator = $this->getConnection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $pola = '%'.$kata.'%';
+
+            return $this->where(function (Builder $kueri) use ($kolom, $operator, $pola) {
+                foreach ((array) $kolom as $satu) {
+                    $kueri->orWhere($satu, $operator, $pola);
+                }
+            });
+        });
     }
 
     /**

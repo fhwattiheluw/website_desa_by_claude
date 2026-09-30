@@ -42,8 +42,8 @@ class PermohonanController extends Controller
             ->when($request->filled('sampai'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('sampai')))
             ->when($request->boolean('terlambat'), fn ($q) => $q->terlambat())
             ->when($request->filled('q'), fn ($q) => $q->where(
-                fn ($w) => $w->where('nomor_tiket', 'like', '%'.$request->string('q').'%')
-                    ->orWhereHas('pemohon', fn ($p) => $p->where('name', 'like', '%'.$request->string('q').'%'))
+                fn ($w) => $w->cariTeks('nomor_tiket', $request->string('q')->toString())
+                    ->orWhereHas('pemohon', fn ($p) => $p->cariTeks('name', $request->string('q')->toString()))
             ))
             // Antrean diurutkan berdasarkan tenggat SLA terdekat (REQ-F-SRT-019).
             ->orderByRaw('CASE WHEN status IN (?, ?) THEN 1 ELSE 0 END', [Permohonan::SELESAI, Permohonan::DITOLAK])

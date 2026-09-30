@@ -18,11 +18,31 @@ permissions:
 
 jobs:
   backend:
-    name: Backend (Laravel)
+    name: Backend (Laravel, ${{ matrix.basis_data }})
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+    strategy:
+      fail-fast: false
+      matrix:
+        # Diuji pada dua mesin basis data karena perbedaannya tidak selalu
+        # memunculkan galat: `LIKE` mengabaikan besar kecil huruf di SQLite
+        # tetapi tidak di PostgreSQL, sehingga pencarian bisa gagal diam-diam.
+        basis_data: [sqlite, pgsql]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sidesa
+          POSTGRES_PASSWORD: sidesa
+          POSTGRES_DB: sidesa_uji
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +50,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: mbstring, sqlite3, pdo_sqlite, gd, zip, bcmath
+          extensions: mbstring, sqlite3, pdo_sqlite, pgsql, pdo_pgsql, gd, zip, bcmath
           coverage: none
 
       - name: Singgahan dependensi Composer
@@ -49,10 +69,19 @@ jobs:
           php artisan key:generate
 
       - name: Periksa gaya kode
+        if: matrix.basis_data == 'sqlite'
         run: ./vendor/bin/pint --test
 
       - name: Jalankan uji otomatis
         run: ./vendor/bin/phpunit
+        env:
+          DB_CONNECTION: ${{ matrix.basis_data }}
+          DB_URL: ''
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: ${{ matrix.basis_data == 'pgsql' && 'sidesa_uji' || ':memory:' }}
+          DB_USERNAME: sidesa
+          DB_PASSWORD: sidesa
 
   frontend:
     name: Frontend (React)

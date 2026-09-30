@@ -25,10 +25,7 @@ class PenggunaController extends Controller
             ->when($request->filled('status'), fn ($q) => $q->where('status_akun', $request->string('status')))
             // REQ-NF-CMP-004: akun yang ditandai penjadwal karena lama tidak dipakai.
             ->when($request->boolean('perlu_ditinjau'), fn ($q) => $q->whereNotNull('tinjauan_akun_pada'))
-            ->when($request->filled('q'), fn ($q) => $q->where(
-                fn ($w) => $w->where('name', 'like', '%'.$request->string('q').'%')
-                    ->orWhere('email', 'like', '%'.$request->string('q').'%')
-            ))
+            ->cariTeks(['name', 'email'], $request->string('q')->toString())
             ->latest()
             ->paginate(20)
             ->through(fn (User $u) => [

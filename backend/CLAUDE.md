@@ -17,6 +17,10 @@ API Laravel 13 untuk Sistem Informasi Desa Terpadu. Kebutuhan mengikat ada pada
 - **Formulir publik** memperoleh pelindungnya dari grup rute
   (`throttle:formulir-publik` dan `captcha`), bukan dari masing-masing
   pengendali. Tambahkan rute formulir publik baru ke grup itu.
+- **Pencarian teks** memakai makro `->cariTeks($kolom, $kata)`, bukan
+  `->where($kolom, 'like', ...)`. `LIKE` mengabaikan besar kecil huruf di SQLite
+  dan MySQL tetapi tidak di PostgreSQL, sehingga pencarian gagal diam-diam saat
+  mesin basis data berganti.
 - **Respons daftar berhalaman** memakai bentuk seragam: kunci `data` beserta
   `current_page`, `last_page`, `per_page`, `total` di tingkat atas. Resource baru
   yang dipakai untuk daftar wajib memakai trait `KoleksiSeragam`.
@@ -25,7 +29,11 @@ API Laravel 13 untuk Sistem Informasi Desa Terpadu. Kebutuhan mengikat ada pada
 
 ```bash
 ./vendor/bin/pint            # gaya kode
-./vendor/bin/phpunit         # seluruh uji harus lulus
+./vendor/bin/phpunit         # seluruh uji harus lulus (SQLite)
+
+# Uji juga pada PostgreSQL bila menyentuh kueri, agregasi, atau pencarian:
+DB_CONNECTION=pgsql DB_URL= DB_HOST=127.0.0.1 DB_DATABASE=sidesa_uji \
+  DB_USERNAME=sidesa DB_PASSWORD=sidesa ./vendor/bin/phpunit
 ```
 
 Perubahan pada alur permohonan, aturan bisnis, atau hak akses wajib disertai uji

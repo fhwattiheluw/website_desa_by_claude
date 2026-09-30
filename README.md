@@ -71,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 123 uji, 554 asersi
+cd backend && ./vendor/bin/phpunit      # 124 uji, 562 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -87,7 +87,10 @@ kebijakan retensi, deteksi indikasi insiden, dan analitik tanpa data pribadi.
 
 Seluruh pemeriksaan di atas juga dijalankan otomatis pada setiap perubahan
 melalui [alur kerja CI](.github/workflows/ci.yml), bersama pemindaian kerentanan
-dependensi (`composer audit` dan `npm audit`) yang diulang tiap pekan.
+dependensi (`composer audit` dan `npm audit`) yang diulang tiap pekan. Uji
+backend dijalankan pada **SQLite dan PostgreSQL** sekaligus, karena perbedaan
+keduanya tidak selalu memunculkan galat — lihat
+[catatan pilihan basis data](docs/OPERASIONAL.md#9-pilihan-basis-data).
 
 ## Struktur
 
@@ -188,6 +191,21 @@ dan tanpa menyimpan alamat IP maupun pengenal pengunjung. Yang tersimpan hanya
 jumlah pembukaan laman per jalur per hari; parameter kueri dipangkas dan laman
 akun serta panel petugas tidak dihitung. Angkanya tampil pada menu **Statistik
 Kunjungan**, dan penghitungan dapat dimatikan sepenuhnya lewat `ANALITIK_AKTIF`.
+
+## Basis data
+
+| Mesin | Kapan dipakai |
+|---|---|
+| SQLite | Pengembangan lokal, uji otomatis, dan desa kecil bersatu server |
+| MySQL/MariaDB | Pilihan paling lazim pada hosting desa di Indonesia |
+| PostgreSQL | Bila penyedia menawarkannya sebagai layanan terkelola |
+
+Berpindah mesin cukup mengubah `.env` lalu `php artisan migrate`; perintah
+`sidesa:cadangkan` memilih sendiri `mysqldump`, `pg_dump`, atau salinan berkas.
+
+Perhatikan: Supabase Cloud tidak punya region Indonesia, sehingga berbenturan
+dengan CON-08 dan REQ-NF-CMP-007 (PP 71/2019). Rinciannya beserta jalur yang
+patuh ada pada [panduan operasional bagian 9](docs/OPERASIONAL.md#9-pilihan-basis-data).
 
 ## Catatan keamanan dan perlindungan data
 

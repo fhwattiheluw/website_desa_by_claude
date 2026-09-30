@@ -18,7 +18,7 @@ class MediaController extends Controller
     {
         $data = Media::where('privat', false)
             ->when($request->filled('koleksi'), fn ($q) => $q->where('koleksi', $request->string('koleksi')))
-            ->when($request->filled('q'), fn ($q) => $q->where('nama_asli', 'like', '%'.$request->string('q').'%'))
+            ->cariTeks('nama_asli', $request->string('q')->toString())
             ->latest()
             ->paginate(24)
             ->through(fn (Media $m) => [

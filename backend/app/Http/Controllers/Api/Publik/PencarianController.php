@@ -18,13 +18,12 @@ class PencarianController extends Controller
         $request->validate(['q' => ['required', 'string', 'min:3', 'max:100']]);
 
         $kunci = $request->string('q')->toString();
-        $pola = '%'.$kunci.'%';
 
         $hasil = collect();
 
         $hasil = $hasil->concat(
             Konten::tayang()
-                ->where(fn ($q) => $q->where('judul', 'like', $pola)->orWhere('isi', 'like', $pola))
+                ->cariTeks(['judul', 'isi'], $kunci)
                 ->limit(10)->get()
                 ->map(fn (Konten $k) => [
                     'jenis' => $k->tipe,
@@ -37,7 +36,7 @@ class PencarianController extends Controller
 
         $hasil = $hasil->concat(
             JenisLayanan::where('aktif', true)
-                ->where(fn ($q) => $q->where('nama', 'like', $pola)->orWhere('deskripsi', 'like', $pola))
+                ->cariTeks(['nama', 'deskripsi'], $kunci)
                 ->limit(5)->get()
                 ->map(fn (JenisLayanan $l) => [
                     'jenis' => 'layanan',
@@ -49,7 +48,8 @@ class PencarianController extends Controller
         );
 
         $hasil = $hasil->concat(
-            ProdukHukum::where(fn ($q) => $q->where('judul', 'like', $pola)->orWhere('tentang', 'like', $pola))
+            ProdukHukum::query()
+                ->cariTeks(['judul', 'tentang'], $kunci)
                 ->limit(5)->get()
                 ->map(fn (ProdukHukum $p) => [
                     'jenis' => 'produk_hukum',
@@ -61,7 +61,7 @@ class PencarianController extends Controller
         );
 
         $hasil = $hasil->concat(
-            Umkm::tayang()->where('nama_usaha', 'like', $pola)->limit(5)->get()
+            Umkm::tayang()->cariTeks('nama_usaha', $kunci)->limit(5)->get()
                 ->map(fn (Umkm $u) => [
                     'jenis' => 'umkm',
                     'judul' => $u->nama_usaha,

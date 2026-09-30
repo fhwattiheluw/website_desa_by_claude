@@ -24,10 +24,7 @@ class KontenController extends Controller
                 'kategori',
                 fn ($k) => $k->where('slug', $request->string('kategori'))
             ))
-            ->when($request->filled('q'), fn ($q) => $q->where(
-                fn ($w) => $w->where('judul', 'like', '%'.$request->string('q').'%')
-                    ->orWhere('ringkasan', 'like', '%'.$request->string('q').'%')
-            ))
+            ->cariTeks(['judul', 'ringkasan'], $request->string('q')->toString())
             ->when(
                 $tipe === 'agenda',
                 fn ($q) => $q->orderBy('mulai_pada'),

@@ -141,6 +141,29 @@ class PortalPublikTest extends TestCase
     }
 
     /**
+     * REQ-F-SRC-001: pencarian tidak boleh membedakan huruf besar dan kecil.
+     *
+     * `LIKE` mengabaikan besar kecil huruf di SQLite dan MySQL tetapi tidak di
+     * PostgreSQL, sehingga tanpa penyeragaman `cariTeks` pencarian gagal
+     * diam-diam begitu desa berpindah mesin basis data.
+     */
+    public function test_pencarian_tidak_membedakan_huruf_besar_kecil(): void
+    {
+        $this->buatKonten(['judul' => 'Pembangunan Jembatan Dusun Mekar']);
+
+        foreach (['jembatan', 'JEMBATAN', 'JeMbAtAn'] as $kunci) {
+            $this->getJson('/api/v1/pencarian?q='.$kunci)
+                ->assertOk()
+                ->assertJsonPath('data.0.judul', 'Pembangunan Jembatan Dusun Mekar');
+        }
+
+        // Penyaringan pada daftar konten memakai jalur yang sama.
+        $this->getJson('/api/v1/konten/berita?q=JEMBATAN')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
+    /**
      * REQ-API-002: seluruh daftar berhalaman memakai bentuk respons yang sama,
      * baik yang berasal dari koleksi resource maupun paginator biasa.
      */
