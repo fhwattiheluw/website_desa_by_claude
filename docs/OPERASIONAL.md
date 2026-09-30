@@ -145,10 +145,38 @@ maksimal 4 jam per bulan (REQ-NF-REL-002).
 
 ## 5. Penempatan saat produksi
 
-- **Satu domain untuk portal dan API.** Sajikan hasil `npm run build` sebagai
-  berkas statis pada akar domain, dan teruskan `/api`, `/storage`, `/sitemap.xml`
-  serta `/robots.txt` ke Laravel. Dengan begitu URL kanonik pada sitemap sama
-  dengan URL yang diakses warga, dan tidak diperlukan konfigurasi CORS.
+- **Satu domain untuk portal dan API.** Berkas statis hasil `npm run build`
+  disajikan langsung oleh peladen web, sedangkan **permintaan halaman diteruskan
+  ke Laravel**. Laravel mengirimkan kerangka aplikasi yang judul, deskripsi, URL
+  kanonik, Open Graph, dan data terstrukturnya sudah terisi, sehingga perayap
+  yang tidak menjalankan JavaScript tetap memperolehnya (REQ-F-SRC-004). Dengan
+  satu domain, URL kanonik sama dengan URL yang diakses warga dan tidak
+  diperlukan konfigurasi CORS.
+
+  ```nginx
+  root /var/www/sidesa/frontend/dist;
+
+  # Berkas yang ada dilayani langsung; sisanya diserahkan ke Laravel.
+  location / {
+      try_files $uri @laravel;
+  }
+
+  location ~ ^/(api|storage)/ {
+      try_files /dev/null @laravel;
+  }
+
+  location @laravel {
+      fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+      fastcgi_param SCRIPT_FILENAME /var/www/sidesa/backend/public/index.php;
+      include fastcgi_params;
+  }
+  ```
+
+- **Isi `FRONTEND_DIST`** pada `.env` backend bila letak berkas hasil build
+  bukan `../frontend/dist` relatif terhadap backend. Bila berkasnya tidak
+  ditemukan, permintaan halaman dialihkan ke `FRONTEND_URL` — perilaku yang
+  memang diinginkan saat pengembangan, ketika antarmuka dilayani server Vite
+  tersendiri.
 - **Isi `FRONTEND_URL`** pada `.env` backend dengan alamat publik portal, sebab
   nilai itu dipakai untuk tautan verifikasi surat, tautan pemulihan kata sandi,
   dan isi `sitemap.xml`.

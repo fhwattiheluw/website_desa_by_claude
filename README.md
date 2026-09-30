@@ -71,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 129 uji, 587 asersi
+cd backend && ./vendor/bin/phpunit      # 138 uji, 631 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -148,6 +148,24 @@ Peta wilayah menandai kantor desa beserta fasilitas umum utama. Pustaka petanya
 dan tidak ikut disinggahkan di muka oleh service worker, sehingga tidak menambah
 berkas awal halaman (REQ-SW-003, CON-02). Seluruh titik juga tersaji sebagai
 daftar teks, sehingga tetap berguna bila peta atau ubinnya gagal dimuat.
+
+## Metadata halaman dan mesin pencari
+
+Portal digambar di peramban, sehingga judul dan deskripsi baru terbentuk setelah
+skrip berjalan. Mesin pencari besar menjalankannya, tetapi banyak perayap lain —
+termasuk pembuat pratinjau tautan pada aplikasi pesan yang paling banyak dipakai
+warga — tidak.
+
+Karena itu permintaan halaman dilayani Laravel, yang menyisipkan judul,
+deskripsi, URL kanonik, Open Graph, dan data terstruktur schema.org ke dalam
+kerangka aplikasi sebelum mengirimkannya. Isinya diambil dari basis data:
+halaman berita memakai judul dan ringkasannya sendiri, halaman layanan memakai
+nama layanannya. Halaman rinci yang tidak ada dijawab 404, dan halaman milik
+satu pengguna ditandai `noindex`.
+
+Setelah skrip berjalan, sisi klien memperbarui tag yang sama saat pengguna
+berpindah halaman — bukan menambah tag baru. Penyiapan peladen web ada pada
+[panduan operasional bagian 5](docs/OPERASIONAL.md#5-penempatan-saat-produksi).
 
 ## Aplikasi web progresif
 
@@ -249,11 +267,13 @@ patuh ada pada [panduan operasional bagian 9](docs/OPERASIONAL.md#9-pilihan-basi
 | Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |
 | — | Kepatuhan UU PDP, CI, dan analitik | Terimplementasi: CAPTCHA, Syarat Penggunaan, hak subjek data, retensi jejak audit, deteksi insiden, pipeline CI beserta pemindaian dependensi, dan analitik tanpa data pribadi |
 | — | Bagan organisasi dan peta wilayah | Terimplementasi: bagan struktur perangkat desa berjenjang, serta peta berpenanda kantor desa dan fasilitas umum yang dimuat secara malas |
+| — | Metadata halaman untuk perayap | Terimplementasi: kerangka aplikasi disajikan Laravel lengkap dengan judul, deskripsi, kanonik, Open Graph, dan data terstruktur |
 
-Dari 218 kebutuhan pada SRS: 166 terimplementasi, 7 terimplementasi sebagian,
+Dari 218 kebutuhan pada SRS: 167 terimplementasi, 6 terimplementasi sebagian,
 20 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
-berlaku pada arsitektur yang dipilih. **Tidak ada lagi kebutuhan berprioritas
-Must yang belum dikerjakan**; tiga butir Must yang tersisa berstatus sebagian,
-dua di antaranya tertahan pada terbitnya sertifikat elektronik (OI-02). Rincian
+berlaku pada arsitektur yang dipilih. **Seluruh kebutuhan Must yang dapat
+dikerjakan sudah dikerjakan**; dua butir Must yang tersisa — REQ-F-SRT-017 dan
+REQ-SW-004 — tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada
+kode. Rincian
 per butir beserta alasannya ada pada
 [bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).

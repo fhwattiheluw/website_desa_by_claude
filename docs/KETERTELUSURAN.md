@@ -21,7 +21,7 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | MOD-USR Pengguna & Akses | REQ-F-USR-001..015 | `Api/AuthController`, `Api/KataSandiController`, `Api/VerifikasiSurelController`, `Http/Middleware/PastikanIzin`, `Api/Admin/PenggunaController` | `lib/auth.ts`, `components/layout/PenyediaAuth.tsx`, `pages/auth/*`, `components/layout/Terlindungi.tsx` | `AutentikasiTest` (10 uji), `PemulihanAkunTest` (9 uji), `OtorisasiTest` (8 uji) |
 | MOD-ADM Administrasi | REQ-F-ADM-001..010 | `Api/Admin/DashboardController`, `PengaturanController`, `AuditLogController`, `Services/AuditLogger`, `Console/Commands/Cadangkan` | `pages/admin/Dasbor.tsx`, `Pengaturan.tsx`, `AuditLog.tsx`, `Laporan.tsx` | `OtorisasiTest::test_audit_log_bersifat_hanya_baca`, `OperasionalTest::test_perintah_pencadangan_...`, `test_ekspor_laporan_...` |
 | MOD-NOT Notifikasi | REQ-F-NOT-001..006 | `Services/NotifikasiService`, model `NotifikasiLog`, perintah `sidesa:ulangi-notifikasi` | Pemberitahuan status pada halaman permohonan | Terpakai pada alur `PermohonanSuratTest` |
-| MOD-SRC Pencarian & SEO | REQ-F-SRC-001..007 | `Api/Publik/PencarianController`, `PetaSitusController` (sitemap, robots, RSS) | `pages/publik/Halaman.tsx` (Pencarian), `TidakDitemukan`, `lib/meta.ts` (metadata dan data terstruktur) | `PortalPublikTest::test_pencarian_global_...`, `OperasionalTest::test_sitemap_...`, `Fase4Test::test_umpan_rss_...` |
+| MOD-SRC Pencarian & SEO | REQ-F-SRC-001..007 | `Api/Publik/PencarianController`, `PetaSitusController` (sitemap, robots, RSS), `KerangkaAplikasiController`, `Services/MetadataHalaman` | `pages/publik/Halaman.tsx` (Pencarian), `TidakDitemukan`, `lib/meta.ts` (metadata dan data terstruktur) | `PortalPublikTest::test_pencarian_global_...`, `OperasionalTest::test_sitemap_...`, `Fase4Test::test_umpan_rss_...` |
 
 ## 2. Aturan bisnis
 
@@ -65,7 +65,8 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-PRF-003 ukuran transfer | Pemuatan malas rute berat, berkas awal 111 kB gzip | Keluaran `npm run build` |
 | REQ-F-BRD-003 bagan struktur organisasi | Kolom `pengurus.atasan_id` membentuk pohon; ditampilkan sebagai daftar bersarang dengan garis penghubung CSS | `Api/Publik/LembagaController::bagan`, `components/ui/BaganOrganisasi.tsx`, `BaganOrganisasiTest` |
 | REQ-F-BRD-004, REQ-SW-003 peta wilayah | Peta tersemat berpenanda kantor desa dan fasilitas umum, pustaka petanya diimpor hanya saat peta terlihat | `Api/Publik/ProfilController`, `components/ui/Peta.tsx`, `BaganOrganisasiTest::test_fasilitas_umum_...` |
-| REQ-NF-MNT-001 cakupan uji | 129 uji, 587 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-NF-MNT-001 cakupan uji | 138 uji, 631 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-F-SRC-004, REQ-F-SRC-005 metadata halaman | Kerangka aplikasi disajikan Laravel dengan judul, deskripsi, kanonik, Open Graph, dan data terstruktur terisi; sisi klien memperbaruinya saat berpindah halaman | `Services/MetadataHalaman`, `Http/Controllers/KerangkaAplikasiController`, `lib/meta.ts`, `MetadataHalamanTest` (9 uji) |
 | REQ-NF-MNT-004 migrasi bernomor | 21 migrasi idempoten | `php artisan migrate:fresh --seed` |
 | REQ-NF-CMP-003, REQ-F-USR-013 hak subjek data | Akses, koreksi, unduhan salinan, dan pengajuan penghapusan oleh pemilik akun | `AuthController::perbaruiProfil`, `Services/DataPribadiService`, `HakSubjekDataTest` (10 uji) |
 | REQ-NF-CMP-004 retensi | Lampiran 12 bulan, draf 7 hari, jejak audit 24 bulan, akun tidak aktif ditandai setelah 36 bulan | `Services/RetensiService`, `sidesa:bersihkan-audit-log`, `sidesa:tinjau-akun-tidak-aktif`, `HakSubjekDataTest::test_jejak_audit_melewati_24_bulan_dihapus` |
@@ -83,16 +84,17 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 166 | M 124 · S 38 · C 4 |
-| Terimplementasi sebagian | 7 | M 3 · S 4 |
+| Terimplementasi | 167 | M 125 · S 38 · C 4 |
+| Terimplementasi sebagian | 6 | M 2 · S 4 |
 | Belum diimplementasikan | 20 | S 12 · C 8 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
 
-**Tidak ada lagi kebutuhan berprioritas Must yang belum dikerjakan.** Tiga butir
-Must yang tersisa berstatus sebagian, dan dua di antaranya (REQ-F-SRT-017 dan
-REQ-SW-004) tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada
-kode. Selebihnya menunggu pengukuran pada lingkungan setara produksi.
+**Seluruh kebutuhan Must yang dapat dikerjakan sudah dikerjakan.** Dua butir
+Must yang tersisa berstatus sebagian — REQ-F-SRT-017 dan REQ-SW-004 — dan
+keduanya tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada kode:
+integrasi penyedianya sudah lengkap dan teruji, tinggal menunggu kredensial
+sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 
 ### 4.1 Terimplementasi sebagian
 
@@ -100,7 +102,6 @@ kode. Selebihnya menunggu pengukuran pada lingkungan setara produksi.
 |---|:---:|---|
 | REQ-F-ADM-010 | S | Halaman populer dan jumlah pembukaan laman sudah ada; jumlah pengunjung unik sengaja tidak dihitung karena memerlukan pengenalan pengunjung berulang, yang bertentangan dengan REQ-SW-006. |
 | REQ-F-SRC-002 | S | Jenis, cuplikan, dan tanggal sudah ada; penyorotan kata kunci belum. |
-| REQ-F-SRC-004 | M | Metadata dipasang saat render; perayap tanpa JavaScript belum terlayani. |
 | REQ-F-SRT-017 | M | Jalur spesimen berjalan; penyedia tersertifikasi siap tetapi menunggu sertifikat (OI-02). |
 | REQ-HW-002 | S | Unggah gambar berfungsi; atribut pemicu kamera belum dipasang. |
 | REQ-NF-SEC-008 | S | Validasi tipe asli dan penolakan berkas berisi skrip sudah ada; pemindai antivirus belum. |
@@ -140,7 +141,7 @@ dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
 `REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
 
 Yang sudah terukur sejauh ini: ukuran berkas awal 111 kB terkompresi
-(REQ-NF-PRF-003) dan cakupan uji otomatis 129 uji dengan 587 asersi pada logika
+(REQ-NF-PRF-003) dan cakupan uji otomatis 138 uji dengan 631 asersi pada logika
 bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
 uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
 

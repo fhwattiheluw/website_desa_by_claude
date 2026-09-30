@@ -22,15 +22,22 @@ function setelTag(selektor: string, buat: () => HTMLElement, atribut: string, ni
  * Menetapkan judul unik, deskripsi meta, URL kanonik, dan metadata Open Graph
  * untuk setiap halaman (REQ-F-SRC-004).
  *
- * Catatan: aplikasi ini dirender di peramban, sehingga metadata terbentuk
- * setelah skrip dijalankan. Mesin pencari yang mengeksekusi JavaScript membaca
- * nilai ini dengan benar; perayap yang tidak menjalankan JavaScript hanya
- * memperoleh metadata bawaan pada index.html. Bila pengindeksan penuh
- * diperlukan, prarender atau render sisi server dijadwalkan pada Fase 4.
+ * Metadata yang sama juga sudah disisipkan server pada kerangka halaman
+ * (`KerangkaAplikasiController`), sehingga perayap yang tidak menjalankan
+ * JavaScript tetap memperolehnya. Kait ini memperbarui tag yang sudah ada —
+ * bukan menambah tag baru — ketika pengguna berpindah halaman tanpa memuat
+ * ulang.
  */
 export function useMeta({ judul, deskripsi, gambar, jenis = 'website' }: Meta) {
   useEffect(() => {
-    const namaSitus = 'Portal Desa'
+    /*
+     * Nama situs diambil dari tag yang sudah disisipkan server, sehingga judul
+     * yang dibentuk di peramban memakai nama desa yang sama persis dengan yang
+     * dilihat perayap. Nilai cadangan dipakai bila kerangka dilayani tanpa
+     * penyisipan, misalnya saat pengembangan dengan server Vite.
+     */
+    const namaSitus =
+      document.head.querySelector('meta[property="og:site_name"]')?.getAttribute('content') || 'Portal Desa'
     const judulLengkap = judul.includes(namaSitus) ? judul : `${judul} — ${namaSitus}`
 
     document.title = judulLengkap
@@ -93,6 +100,10 @@ export function useMeta({ judul, deskripsi, gambar, jenis = 'website' }: Meta) {
 export function useDataTerstruktur(data: Record<string, unknown> | null) {
   useEffect(() => {
     if (!data) return
+
+    // Blok yang disisipkan server untuk halaman ini disingkirkan lebih dahulu,
+    // agar halaman tidak memuat dua data terstruktur sekaligus.
+    document.head.querySelector('script[data-sidesa="terstruktur-server"]')?.remove()
 
     const skrip = document.createElement('script')
     skrip.type = 'application/ld+json'

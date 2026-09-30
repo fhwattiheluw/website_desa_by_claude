@@ -58,6 +58,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Jalur hasil build antarmuka
+    |--------------------------------------------------------------------------
+    | Dipakai untuk menyajikan kerangka aplikasi beserta metadata yang sudah
+    | terisi kepada perayap yang tidak menjalankan JavaScript (REQ-F-SRC-004).
+    | Bila berkasnya tidak ada, permintaan dialihkan ke `frontend_url`.
+    */
+
+    'dist' => env('FRONTEND_DIST', base_path('../frontend/dist')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |
