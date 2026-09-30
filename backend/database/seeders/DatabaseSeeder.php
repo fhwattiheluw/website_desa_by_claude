@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             HariLiburSeeder::class,
             PenggunaSeeder::class,
             LembagaSeeder::class,
+            FasilitasUmumSeeder::class,
             KontenSeeder::class,
             TransparansiSeeder::class,
         ]);

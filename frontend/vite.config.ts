@@ -44,6 +44,14 @@ export default defineConfig({
         // Permintaan API tidak pernah dijawab oleh kerangka aplikasi.
         navigateFallbackDenylist: [/^\/api/, /^\/storage/, /^\/rss/, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        /*
+         * Pustaka peta tidak ikut disinggahkan di muka. Ukurannya sekitar 43 kB
+         * terkompresi dan hanya dipakai pada laman profil, sehingga memaksa
+         * setiap pengunjung mengunduhnya di awal justru melawan tujuan pemuatan
+         * malas pada koneksi desa (CON-02, REQ-SW-003). Berkasnya disinggahkan
+         * saat pertama kali benar-benar dipakai.
+         */
+        globIgnores: ['**/leaflet*'],
         runtimeCaching: [
           {
             // Data publik boleh basi sesaat demi tetap terbaca saat jaringan mati.
@@ -57,6 +65,17 @@ export default defineConfig({
               cacheName: 'data-publik',
               networkTimeoutSeconds: 5,
               expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            // Disinggahkan setelah peta pertama kali dibuka, agar pembukaan
+            // berikutnya tetap cepat dan tersedia saat jaringan mati.
+            urlPattern: ({ url }) => /\/assets\/leaflet.*\.(js|css)$/.test(url.pathname),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'pustaka-peta',
+              expiration: { maxEntries: 6, maxAgeSeconds: 60 * 60 * 24 * 30 },
               cacheableResponse: { statuses: [200] },
             },
           },

@@ -71,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 124 uji, 562 asersi
+cd backend && ./vendor/bin/phpunit      # 129 uji, 587 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -135,6 +135,19 @@ Tugas terjadwal (daftarkan `php artisan schedule:run` pada cron server):
 
 Gateway WhatsApp bersifat opsional. Bila `WHATSAPP_GATEWAY_TOKEN` kosong,
 notifikasi tetap terkirim melalui surel dan alur layanan tidak terganggu.
+
+## Bagan organisasi dan peta wilayah
+
+Struktur perangkat desa disajikan sebagai bagan berjenjang dari kolom
+`pengurus.atasan_id`, bukan disimpulkan dari teks jabatan. Bagannya berupa daftar
+bersarang dengan garis penghubung CSS, sehingga tetap terbaca pembaca layar dan
+berubah menjadi daftar bertingkat menurun pada layar telepon.
+
+Peta wilayah menandai kantor desa beserta fasilitas umum utama. Pustaka petanya
+(Leaflet, ~43 kB terkompresi) diimpor **hanya ketika peta benar-benar terlihat**
+dan tidak ikut disinggahkan di muka oleh service worker, sehingga tidak menambah
+berkas awal halaman (REQ-SW-003, CON-02). Seluruh titik juga tersaji sebagai
+daftar teks, sehingga tetap berguna bila peta atau ubinnya gagal dimuat.
 
 ## Aplikasi web progresif
 
@@ -235,11 +248,12 @@ patuh ada pada [panduan operasional bagian 9](docs/OPERASIONAL.md#9-pilihan-basi
 | Fase 3 | Partisipasi dan keterbukaan | Terimplementasi |
 | Fase 4 | Ekonomi desa dan penyempurnaan | Terimplementasi: BUMDes, pendaftaran UMKM mandiri, PWA, dwibahasa, API data terbuka, dan lapisan TTE yang siap disambungkan ke penyedia tersertifikasi |
 | — | Kepatuhan UU PDP, CI, dan analitik | Terimplementasi: CAPTCHA, Syarat Penggunaan, hak subjek data, retensi jejak audit, deteksi insiden, pipeline CI beserta pemindaian dependensi, dan analitik tanpa data pribadi |
+| — | Bagan organisasi dan peta wilayah | Terimplementasi: bagan struktur perangkat desa berjenjang, serta peta berpenanda kantor desa dan fasilitas umum yang dimuat secara malas |
 
-Dari 218 kebutuhan pada SRS: 163 terimplementasi, 10 terimplementasi sebagian,
+Dari 218 kebutuhan pada SRS: 166 terimplementasi, 7 terimplementasi sebagian,
 20 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
 berlaku pada arsitektur yang dipilih. **Tidak ada lagi kebutuhan berprioritas
-Must yang belum dikerjakan**; lima butir Must yang tersisa berstatus sebagian,
+Must yang belum dikerjakan**; tiga butir Must yang tersisa berstatus sebagian,
 dua di antaranya tertahan pada terbitnya sertifikat elektronik (OI-02). Rincian
 per butir beserta alasannya ada pada
 [bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).

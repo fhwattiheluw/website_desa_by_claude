@@ -30,7 +30,7 @@ export const KAMUS: Record<string, { id: string; en: string }> = {
   },
   'profil.lembaga': { id: 'Lembaga Kemasyarakatan Desa', en: 'Community Institutions' },
   'profil.masa_jabatan': { id: 'Masa jabatan', en: 'Term of office' },
-  'profil.peta': { id: 'Lihat lokasi kantor desa pada peta', en: 'View the village office on a map' },
+  'profil.peta': { id: 'Peta Wilayah dan Fasilitas Umum', en: 'Area Map and Public Facilities' },
   'profil.dusun': { id: 'dusun', en: 'hamlets' },
 
   'wisata.judul': { id: 'Wisata Desa', en: 'Village Tourism' },

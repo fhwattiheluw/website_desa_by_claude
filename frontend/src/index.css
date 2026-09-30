@@ -103,4 +103,101 @@
   .prose-desa :where(a) {
     @apply text-desa-700 underline underline-offset-2;
   }
+
+  /*
+   * Bagan struktur organisasi (REQ-F-BRD-003).
+   *
+   * Garis penghubung digambar dengan pseudo-elemen agar bagan tetap berupa
+   * daftar bersarang yang dapat dibacakan pembaca layar, dipilih, dan
+   * diperbesar — bukan gambar yang kehilangan maknanya saat diperbesar.
+   *
+   * Di bawah 768 px bagan tampil sebagai daftar bertingkat menurun; bagan
+   * mendatar memaksa pengguliran menyamping pada telepon (CON-02, CON-06).
+   */
+  .bagan ul {
+    @apply relative flex flex-col;
+  }
+
+  .bagan li {
+    @apply relative flex flex-col;
+  }
+
+  /* Tampilan menurun: siku dari atasan ke kotak, dan batang antarsaudara. */
+  .bagan li:not(.bagan-akar) {
+    @apply pl-6;
+  }
+
+  .bagan li:not(.bagan-akar)::before {
+    @apply absolute left-0 top-0 h-6 w-4 rounded-bl-lg border-b border-l border-slate-300;
+    content: '';
+  }
+
+  .bagan li:not(.bagan-akar)::after {
+    @apply absolute left-0 top-0 w-px border-l border-slate-300;
+    content: '';
+    height: 100%;
+  }
+
+  .bagan li:not(.bagan-akar):last-child::after {
+    @apply hidden;
+  }
+
+  @media (min-width: 768px) {
+    /* Kotak dan cabang di bawahnya dipusatkan mendatar di dalam tiap simpul. */
+    .bagan li {
+      @apply items-center;
+    }
+
+    /*
+     * Baris bawahan disejajarkan dari atas, bukan dipusatkan: bila dipusatkan,
+     * simpul yang punya cabang lebih dalam akan mendorong saudaranya turun dan
+     * palang penghubungnya tidak lagi segaris.
+     */
+    .bagan ul.bagan-anak {
+      @apply flex-row items-start justify-center pt-6;
+    }
+
+    /* Batang turun dari kotak atasan menuju palang bawahannya. */
+    .bagan ul.bagan-anak::before {
+      @apply absolute left-1/2 top-0 h-6 w-px border-l border-slate-300;
+      content: '';
+    }
+
+    .bagan li:not(.bagan-akar) {
+      @apply px-3 pl-3 pt-6;
+    }
+
+    /*
+     * Palang mendatar digambar oleh tiap anak, bukan oleh induknya: dengan
+     * begitu ujung palang berhenti tepat di tengah anak pertama dan terakhir,
+     * berapa pun lebar masing-masing kotak.
+     */
+    .bagan li:not(.bagan-akar)::before {
+      @apply top-0 h-0 w-auto rounded-none border-b-0 border-l-0 border-t border-slate-300;
+      /* Ditarik sepiksel ke luar agar tidak tampak jahitan antarsegmen. */
+      left: -1px;
+      right: -1px;
+    }
+
+    .bagan li:not(.bagan-akar):first-child::before {
+      @apply left-1/2;
+    }
+
+    .bagan li:not(.bagan-akar):last-child::before {
+      @apply right-1/2;
+    }
+
+    .bagan li:not(.bagan-akar):only-child::before {
+      @apply hidden;
+    }
+
+    /* Batang pendek dari palang turun ke kotak. */
+    .bagan li:not(.bagan-akar)::after {
+      @apply left-1/2 top-0 block h-6 border-l border-slate-300;
+    }
+
+    .bagan li:not(.bagan-akar):last-child::after {
+      @apply block;
+    }
+  }
 }

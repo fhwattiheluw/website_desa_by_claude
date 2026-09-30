@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { api, pesanGalat } from '@/lib/api'
-import { useProfilDesa } from '@/lib/kueri'
+import { useFasilitasUmum, useProfilDesa } from '@/lib/kueri'
 import { useMeta } from '@/lib/meta'
 import { useBahasa } from '@/lib/bahasa'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
+import { BaganOrganisasi, type SimpulBagan } from '@/components/ui/BaganOrganisasi'
+import { Peta, type TitikPeta } from '@/components/ui/Peta'
 
 interface Lembaga {
   nama: string
@@ -12,11 +14,13 @@ interface Lembaga {
   jenis: string
   deskripsi: string | null
   pengurus: { nama: string; jabatan: string; wilayah: string | null; masa_jabatan?: string | null; tugas_pokok?: string | null; foto: string | null }[]
+  bagan: SimpulBagan[]
 }
 
 export function Profil() {
   const { t } = useBahasa()
   const { data: desa, isPending, error } = useProfilDesa()
+  const { data: fasilitas } = useFasilitasUmum()
   const { data: lembaga } = useQuery({
     queryKey: ['lembaga'],
     queryFn: async () => (await api.get<{ data: Lembaga[] }>('/lembaga')).data.data,
@@ -32,6 +36,18 @@ export function Profil() {
 
   const pemerintahDesa = lembaga?.find((l) => l.jenis === 'pemerintah_desa')
   const lainnya = lembaga?.filter((l) => l.jenis !== 'pemerintah_desa') ?? []
+
+  /*
+   * Kantor desa ditandai berbeda dari fasilitas lain. Bila koordinatnya sama
+   * dengan koordinat desa pada pengaturan, cukup satu penanda.
+   */
+  const titikPeta: TitikPeta[] = (fasilitas ?? []).map((satu) => ({
+    nama: satu.nama,
+    keterangan: satu.keterangan ?? satu.alamat,
+    lat: satu.koordinat.lat,
+    lng: satu.koordinat.lng,
+    utama: satu.jenis === 'kantor',
+  }))
 
   const batas = [
     [t('profil.utara'), desa?.batas_utara],
@@ -98,18 +114,20 @@ export function Profil() {
             ))}
           </dl>
 
-          {desa?.lat && desa?.lng && (
-            <a
-              href={`https://www.openstreetmap.org/?mlat=${desa.lat}&mlon=${desa.lng}#map=14/${desa.lat}/${desa.lng}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-4 inline-block text-sm font-medium text-desa-700 underline underline-offset-2"
-            >
-              {t('profil.peta')}
-            </a>
-          )}
         </IsiKartu>
       </Kartu>
+
+      {titikPeta.length > 0 && (
+        <Kartu>
+          <KepalaKartu
+            judul={t('profil.peta')}
+            deskripsi="Kantor desa dan fasilitas umum utama. Peta dimuat setelah Anda menggulir ke bagian ini."
+          />
+          <IsiKartu>
+            <Peta titik={titikPeta} judul={t('profil.peta')} />
+          </IsiKartu>
+        </Kartu>
+      )}
 
       {pemerintahDesa && (
         <Kartu>
@@ -118,19 +136,39 @@ export function Profil() {
             deskripsi={t('profil.struktur.keterangan')}
           />
           <IsiKartu>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {pemerintahDesa.pengurus.map((orang) => (
-                <li key={`${orang.nama}-${orang.jabatan}`} className="rounded-lg border border-slate-200 p-4">
-                  <p className="font-medium text-slate-900">{orang.nama}</p>
-                  <p className="text-sm text-desa-700">{orang.jabatan}</p>
-                  {orang.masa_jabatan && (
-                    <p className="mt-1 text-xs text-slate-500">{t('profil.masa_jabatan')} {orang.masa_jabatan}</p>
-                  )}
-                  {orang.tugas_pokok && <p className="mt-2 text-sm text-slate-600">{orang.tugas_pokok}</p>}
-                </li>
-              ))}
-            </ul>
+            <BaganOrganisasi bagan={pemerintahDesa.bagan} judul={t('profil.struktur')} />
           </IsiKartu>
+
+          {/*
+            * Tugas pokok tidak dimuat ke dalam kotak bagan agar bagan tetap
+            * terbaca; rinciannya disajikan sebagai tabel yang sekaligus menjadi
+            * padanan teks bagan.
+            */}
+          <div className="overflow-x-auto border-t border-slate-100">
+            <table className="w-full text-sm">
+              <caption className="sr-only">
+                Perangkat desa beserta jabatan, masa jabatan, dan tugas pokoknya
+              </caption>
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-600">
+                  <th scope="col" className="px-5 py-3 font-medium">Nama</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Jabatan</th>
+                  <th scope="col" className="px-5 py-3 font-medium">{t('profil.masa_jabatan')}</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Tugas pokok</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pemerintahDesa.pengurus.map((orang) => (
+                  <tr key={`${orang.nama}-${orang.jabatan}`} className="border-b border-slate-100 last:border-0">
+                    <th scope="row" className="px-5 py-3 text-left font-medium">{orang.nama}</th>
+                    <td className="px-5 py-3 text-desa-700">{orang.jabatan}</td>
+                    <td className="px-5 py-3 text-slate-600">{orang.masa_jabatan ?? '-'}</td>
+                    <td className="px-5 py-3 text-slate-600">{orang.tugas_pokok ?? '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Kartu>
       )}
 

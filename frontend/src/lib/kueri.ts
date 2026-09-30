@@ -4,9 +4,18 @@ import type { Apbdes, Halaman, Konten, JenisLayanan, PengaturanDesa, Statistik, 
 
 /** Kueri bersama untuk data publik yang jarang berubah. */
 
+export interface FasilitasUmum {
+  nama: string
+  jenis: string
+  alamat: string | null
+  keterangan: string | null
+  koordinat: { lat: number; lng: number }
+}
+
 interface JawabanProfil {
   data: PengaturanDesa
   analitik_aktif: boolean
+  fasilitas_umum: FasilitasUmum[]
 }
 
 const KUERI_PROFIL = {
@@ -17,6 +26,11 @@ const KUERI_PROFIL = {
 
 export function useProfilDesa() {
   return useQuery({ ...KUERI_PROFIL, select: (jawaban: JawabanProfil) => jawaban.data })
+}
+
+/** REQ-F-BRD-004: titik fasilitas umum yang ditandai pada peta wilayah. */
+export function useFasilitasUmum() {
+  return useQuery({ ...KUERI_PROFIL, select: (jawaban: JawabanProfil) => jawaban.fasilitas_umum })
 }
 
 /** REQ-SW-006: portal hanya mengirim hitungan kunjungan bila desa menyalakannya. */

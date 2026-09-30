@@ -14,53 +14,58 @@ class LembagaSeeder extends Seeder
             [
                 'nama' => 'Pemerintah Desa Sukamaju', 'jenis' => 'pemerintah_desa',
                 'deskripsi' => 'Perangkat desa yang menyelenggarakan urusan pemerintahan dan pelayanan masyarakat.',
+                /*
+                 * Kolom keempat menyatakan jabatan atasan langsung, mengikuti
+                 * susunan Permendagri 84/2015: Kaur berada di bawah Sekretaris
+                 * Desa, sedangkan Kasi langsung di bawah Kepala Desa.
+                 */
                 'pengurus' => [
-                    ['Hartono Wijaya', 'Kepala Desa', 'Memimpin penyelenggaraan pemerintahan desa'],
-                    ['Sri Rahayu', 'Sekretaris Desa', 'Membantu Kepala Desa di bidang administrasi'],
-                    ['Budi Santoso', 'Kasi Pemerintahan', 'Melaksanakan urusan pemerintahan dan kependudukan'],
-                    ['Ani Kusmawati', 'Kasi Kesejahteraan', 'Melaksanakan pembangunan dan pemberdayaan masyarakat'],
-                    ['Dedi Kurniawan', 'Kaur Umum dan Perencanaan', 'Mengelola administrasi umum dan perencanaan'],
-                    ['Lilis Suryani', 'Kaur Keuangan', 'Mengelola keuangan dan aset desa'],
+                    ['Hartono Wijaya', 'Kepala Desa', 'Memimpin penyelenggaraan pemerintahan desa', null],
+                    ['Sri Rahayu', 'Sekretaris Desa', 'Membantu Kepala Desa di bidang administrasi', 'Kepala Desa'],
+                    ['Budi Santoso', 'Kasi Pemerintahan', 'Melaksanakan urusan pemerintahan dan kependudukan', 'Kepala Desa'],
+                    ['Ani Kusmawati', 'Kasi Kesejahteraan', 'Melaksanakan pembangunan dan pemberdayaan masyarakat', 'Kepala Desa'],
+                    ['Dedi Kurniawan', 'Kaur Umum dan Perencanaan', 'Mengelola administrasi umum dan perencanaan', 'Sekretaris Desa'],
+                    ['Lilis Suryani', 'Kaur Keuangan', 'Mengelola keuangan dan aset desa', 'Sekretaris Desa'],
                 ],
             ],
             [
                 'nama' => 'Badan Permusyawaratan Desa', 'jenis' => 'bpd',
                 'deskripsi' => 'Lembaga yang menampung aspirasi masyarakat dan mengawasi kinerja pemerintah desa.',
                 'pengurus' => [
-                    ['Asep Mulyana', 'Ketua BPD', null],
-                    ['Nurhayati', 'Wakil Ketua', null],
-                    ['Rudi Hermawan', 'Sekretaris', null],
+                    ['Asep Mulyana', 'Ketua BPD', null, null],
+                    ['Nurhayati', 'Wakil Ketua', null, 'Ketua BPD'],
+                    ['Rudi Hermawan', 'Sekretaris', null, 'Ketua BPD'],
                 ],
             ],
             [
                 'nama' => 'Tim Penggerak PKK', 'jenis' => 'pkk',
                 'deskripsi' => 'Gerakan pemberdayaan dan kesejahteraan keluarga di tingkat desa.',
                 'pengurus' => [
-                    ['Yuliana Hartono', 'Ketua TP PKK', null],
-                    ['Siti Maryam', 'Sekretaris', null],
+                    ['Yuliana Hartono', 'Ketua TP PKK', null, null],
+                    ['Siti Maryam', 'Sekretaris', null, 'Ketua TP PKK'],
                 ],
             ],
             [
                 'nama' => 'Karang Taruna Tunas Muda', 'jenis' => 'karang_taruna',
                 'deskripsi' => 'Wadah pengembangan generasi muda desa di bidang sosial dan ekonomi kreatif.',
                 'pengurus' => [
-                    ['Agus Priyanto', 'Ketua', null],
-                    ['Dewi Anggraeni', 'Bendahara', null],
+                    ['Agus Priyanto', 'Ketua', null, null],
+                    ['Dewi Anggraeni', 'Bendahara', null, 'Ketua'],
                 ],
             ],
             [
                 'nama' => 'BUMDes Sukamaju Mandiri', 'jenis' => 'bumdes',
                 'deskripsi' => 'Pengurus badan usaha milik desa yang mengelola unit usaha dan kerja sama ekonomi desa.',
                 'pengurus' => [
-                    ['Asep Saepudin', 'Direktur', null],
-                    ['Dewi Anggraeni', 'Sekretaris', null],
-                    ['Yuyun Yuningsih', 'Bendahara', null],
+                    ['Asep Saepudin', 'Direktur', null, null],
+                    ['Dewi Anggraeni', 'Sekretaris', null, 'Direktur'],
+                    ['Yuyun Yuningsih', 'Bendahara', null, 'Direktur'],
                 ],
             ],
             [
                 'nama' => 'Lembaga Pemberdayaan Masyarakat', 'jenis' => 'lpm',
                 'deskripsi' => 'Mitra pemerintah desa dalam perencanaan dan pelaksanaan pembangunan.',
-                'pengurus' => [['Endang Suherman', 'Ketua LPM', null]],
+                'pengurus' => [['Endang Suherman', 'Ketua LPM', null, null]],
             ],
         ];
 
@@ -72,14 +77,19 @@ class LembagaSeeder extends Seeder
 
             $lembaga->pengurus()->delete();
 
-            foreach ($item['pengurus'] as $no => [$nama, $jabatan, $tugas]) {
-                $lembaga->pengurus()->create([
+            // Disimpan per jabatan agar atasan dapat dirujuk tanpa bergantung
+            // pada urutan penyisipan.
+            $menurutJabatan = [];
+
+            foreach ($item['pengurus'] as $no => [$nama, $jabatan, $tugas, $atasan]) {
+                $menurutJabatan[$jabatan] = $lembaga->pengurus()->create([
                     'nama' => $nama,
                     'jabatan' => $jabatan,
                     'tugas_pokok' => $tugas,
                     'masa_jabatan_mulai' => 2022,
                     'masa_jabatan_selesai' => 2028,
                     'urutan' => $no,
+                    'atasan_id' => $atasan === null ? null : ($menurutJabatan[$atasan]?->id),
                 ]);
             }
         }
