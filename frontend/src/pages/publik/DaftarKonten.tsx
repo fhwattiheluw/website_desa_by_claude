@@ -8,6 +8,7 @@ import { Kartu } from '@/components/ui/Kartu'
 import { Lencana } from '@/components/ui/Lencana'
 import { Paginasi } from '@/components/ui/Paginasi'
 import { GalatMuat, KondisiKosong, Rangka } from '@/components/ui/Status'
+import { KalenderAgenda } from '@/components/ui/KalenderAgenda'
 import type { TipeKonten } from '@/types'
 
 const JUDUL: Record<TipeKonten, { judul: string; deskripsi: string }> = {
@@ -20,6 +21,8 @@ const JUDUL: Record<TipeKonten, { judul: string; deskripsi: string }> = {
 export function DaftarKonten({ tipe }: { tipe: TipeKonten }) {
   const [halaman, setHalaman] = useState(1)
   const [kategori, setKategori] = useState('')
+  // REQ-F-KNT-012: agenda tersedia dalam tampilan kalender maupun daftar.
+  const [tampilan, setTampilan] = useState<'kalender' | 'daftar'>('kalender')
   const { data, isPending, error } = useDaftarKonten(tipe, halaman, kategori)
   const { data: daftarKategori } = useKategori()
 
@@ -33,6 +36,28 @@ export function DaftarKonten({ tipe }: { tipe: TipeKonten }) {
         <h1 className="text-2xl">{info.judul}</h1>
         <p className="mt-1 text-slate-600">{info.deskripsi}</p>
       </header>
+
+      {tipe === 'agenda' && (
+        <div className="flex gap-2" role="group" aria-label="Pilih tampilan agenda">
+          {(['kalender', 'daftar'] as const).map((pilihan) => (
+            <button
+              key={pilihan}
+              type="button"
+              onClick={() => setTampilan(pilihan)}
+              aria-pressed={tampilan === pilihan}
+              className={`min-h-11 rounded-lg border px-4 text-sm font-medium ${
+                tampilan === pilihan
+                  ? 'border-desa-700 bg-desa-50 text-desa-800'
+                  : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              {pilihan === 'kalender' ? 'Kalender Bulanan' : 'Daftar'}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {tipe === 'agenda' && tampilan === 'kalender' && <KalenderAgenda />}
 
       {tipe === 'berita' && (daftarKategori?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-2" role="group" aria-label="Saring menurut kategori">
@@ -62,7 +87,7 @@ export function DaftarKonten({ tipe }: { tipe: TipeKonten }) {
         </div>
       )}
 
-      {error ? (
+      {tipe === 'agenda' && tampilan === 'kalender' ? null : error ? (
         <GalatMuat pesan={pesanGalat(error)} />
       ) : isPending ? (
         <Rangka baris={4} />

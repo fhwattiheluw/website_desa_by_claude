@@ -34,7 +34,10 @@ class DataPribadiService
      */
     public const KONTAK_ANONIM = '[dihapus atas permintaan pemilik data]';
 
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly NotifikasiPetugasService $lonceng,
+    ) {}
 
     /**
      * Menyusun seluruh data pribadi yang sistem simpan tentang satu pengguna,
@@ -167,6 +170,8 @@ class DataPribadiService
         ]);
 
         $this->audit->catat('ajukan_hapus_data', 'PermintaanDataPribadi', $permintaan->id);
+        // REQ-F-NOT-005: tenggatnya 3x24 jam, jadi petugas perlu segera tahu.
+        $this->lonceng->permintaanDataBaru($permintaan);
 
         return $permintaan;
     }

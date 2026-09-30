@@ -25,7 +25,7 @@ class User extends Authenticatable
     protected $fillable = [
         'role_id', 'name', 'email', 'password', 'nik', 'nik_hash', 'telepon', 'alamat',
         'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'pekerjaan', 'status_akun',
-        'verifikasi_nik_at', 'consent_at',
+        'verifikasi_nik_at', 'consent_at', 'preferensi_notifikasi',
     ];
 
     protected $hidden = ['password', 'remember_token', 'nik_hash'];
@@ -40,6 +40,7 @@ class User extends Authenticatable
             'tinjauan_akun_pada' => 'datetime',
             'terkunci_sampai' => 'datetime',
             'tanggal_lahir' => 'date',
+            'preferensi_notifikasi' => 'array',
             'password' => 'hashed',
         ];
     }
@@ -109,6 +110,43 @@ class User extends Authenticatable
     public function petugas(): bool
     {
         return $this->role !== null && $this->role->kode !== Role::WARGA;
+    }
+
+    /** Kanal notifikasi yang tersedia beserta nilai bawaannya (REQ-F-NOT-006). */
+    public const PREFERENSI_BAWAAN = ['email' => true, 'whatsapp' => true, 'pengumuman' => true];
+
+    /** @return array<string, bool> */
+    public function preferensiNotifikasi(): array
+    {
+        $tersimpan = $this->preferensi_notifikasi ?? [];
+
+        return array_map(
+            fn (string $kunci) => (bool) ($tersimpan[$kunci] ?? self::PREFERENSI_BAWAAN[$kunci]),
+            array_combine(array_keys(self::PREFERENSI_BAWAAN), array_keys(self::PREFERENSI_BAWAAN)),
+        );
+    }
+
+    /**
+     * Apakah satu kanal boleh dipakai untuk pengguna ini.
+     *
+     * Pemberitahuan transaksional — surat selesai, permohonan dikembalikan —
+     * tetap dikirim lewat surel sekalipun kedua kanal dimatikan. Warga yang
+     * mematikan semuanya lalu tidak pernah tahu suratnya sudah jadi bukan
+     * pilihan yang benar-benar ia maksud (REQ-F-NOT-006).
+     */
+    public function menerimaLewat(string $kanal, bool $transaksional = true): bool
+    {
+        $preferensi = $this->preferensiNotifikasi();
+
+        if (! $transaksional && ! $preferensi['pengumuman']) {
+            return false;
+        }
+
+        if ($preferensi[$kanal] ?? false) {
+            return true;
+        }
+
+        return $transaksional && $kanal === 'email' && ! $preferensi['whatsapp'];
     }
 
     /** BR-01: hanya warga aktif ber-NIK terverifikasi yang boleh mengajukan layanan. */

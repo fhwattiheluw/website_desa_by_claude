@@ -30,12 +30,15 @@ class NotifikasiService
             'alasan' => $permohonan->alasan,
         ];
 
-        if (filled($permohonan->pemohon->email)) {
-            $this->kirim('email', $permohonan->pemohon->email, $templat, $data);
+        // REQ-F-NOT-006: kanal yang dimatikan warga tidak dipakai lagi.
+        $pemohon = $permohonan->pemohon;
+
+        if (filled($pemohon->email) && $pemohon->menerimaLewat('email')) {
+            $this->kirim('email', $pemohon->email, $templat, $data);
         }
 
-        if (filled($permohonan->pemohon->telepon)) {
-            $this->kirim('whatsapp', $permohonan->pemohon->telepon, $templat, $data);
+        if (filled($pemohon->telepon) && $pemohon->menerimaLewat('whatsapp')) {
+            $this->kirim('whatsapp', $pemohon->telepon, $templat, $data);
         }
     }
 

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { useProfilDesa } from '@/lib/kueri'
+import { LonceNotifikasi } from '@/components/layout/LonceNotifikasi'
 
 interface ButirMenu {
   ke: string
@@ -111,16 +112,21 @@ export function TataLetakPanel() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+        <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
           <button
             type="button"
             onClick={() => setSidebarTerbuka(true)}
             aria-label="Buka menu panel"
-            className="grid size-11 place-items-center rounded-lg text-slate-700 hover:bg-slate-100"
+            className="grid size-11 place-items-center rounded-lg text-slate-700 hover:bg-slate-100 lg:hidden"
           >
             <Menu aria-hidden className="size-5" />
           </button>
-          <span className="font-semibold">Panel Petugas</span>
+          <span className="font-semibold lg:sr-only">Panel Petugas</span>
+
+          {/* REQ-F-NOT-005: lonceng pekerjaan baru, terlihat pada seluruh lebar layar. */}
+          <div className="ml-auto">
+            <LonceNotifikasi />
+          </div>
         </header>
 
         <main className="min-w-0 flex-1 p-4 sm:p-6">

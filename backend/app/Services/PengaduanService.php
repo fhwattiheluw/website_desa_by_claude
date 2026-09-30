@@ -29,6 +29,7 @@ class PengaduanService
         private readonly KalenderKerja $kalender,
         private readonly AuditLogger $audit,
         private readonly NotifikasiService $notifikasi,
+        private readonly NotifikasiPetugasService $lonceng,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -64,6 +65,9 @@ class PengaduanService
                     'kode_lacak' => $pengaduan->kode_lacak,
                 ]);
             }
+
+            // REQ-F-NOT-005: pengaduan masuk ke antrean petugas yang berwenang.
+            $this->lonceng->pengaduanBaru($pengaduan);
 
             return $pengaduan;
         });

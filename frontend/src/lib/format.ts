@@ -20,17 +20,47 @@ export function angka(nilai: number): string {
   return new Intl.NumberFormat('id-ID').format(nilai)
 }
 
+/**
+ * Membaca komponen waktu persis seperti yang dituliskan server.
+ *
+ * `new Date(iso).getHours()` menerjemahkan waktu ke zona perangkat pembaca.
+ * Untuk portal desa itu keliru: jam musyawarah desa dan jam pelayanan kantor
+ * adalah waktu setempat, bukan waktu tempat pembacanya berada. Warga yang
+ * sedang merantau harus tetap melihat "09.00", bukan jam di kotanya.
+ *
+ * Server selalu mengirim waktu pada zona desa (APP_TIMEZONE), sehingga
+ * komponennya cukup dibaca apa adanya tanpa penerjemahan.
+ */
+function bagianWaktu(iso: string) {
+  const cocok = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/.exec(iso)
+
+  if (!cocok) return null
+
+  return {
+    tahun: Number(cocok[1]),
+    bulan: Number(cocok[2]) - 1,
+    hari: Number(cocok[3]),
+    jam: cocok[4] ?? null,
+    menit: cocok[5] ?? null,
+  }
+}
+
 export function tanggal(iso: string | null | undefined, denganWaktu = false): string {
   if (!iso) return '-'
 
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return '-'
+  const bagian = bagianWaktu(iso)
+  if (!bagian || Number.isNaN(new Date(iso).getTime())) return '-'
 
-  const dasar = `${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`
+  const dasar = `${bagian.hari} ${BULAN[bagian.bulan]} ${bagian.tahun}`
 
-  return denganWaktu
-    ? `${dasar}, ${String(d.getHours()).padStart(2, '0')}.${String(d.getMinutes()).padStart(2, '0')} WIB`
-    : dasar
+  return denganWaktu && bagian.jam ? `${dasar}, ${bagian.jam}.${bagian.menit} WIB` : dasar
+}
+
+/** Jam dan menit saja, untuk rentang waktu kegiatan pada kalender agenda. */
+export function jam(iso: string | null | undefined): string {
+  const bagian = iso ? bagianWaktu(iso) : null
+
+  return bagian?.jam ? `${bagian.jam}.${bagian.menit}` : '-'
 }
 
 export function tanggalRelatif(iso: string | null | undefined): string {

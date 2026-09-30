@@ -42,6 +42,7 @@ class PermohonanService
         private readonly KalenderKerja $kalender,
         private readonly AuditLogger $audit,
         private readonly NotifikasiService $notifikasi,
+        private readonly NotifikasiPetugasService $lonceng,
     ) {}
 
     /**
@@ -101,6 +102,8 @@ class PermohonanService
 
             if (! $draf) {
                 $this->notifikasi->permohonanBerubah($permohonan, 'permohonan_diterima');
+                // REQ-F-NOT-005: pekerjaan baru masuk ke antrean verifikator.
+                $this->lonceng->permohonanBerpindah($permohonan, Permohonan::DIAJUKAN);
             }
 
             return $permohonan;
@@ -187,6 +190,9 @@ class PermohonanService
             if ($templat !== null) {
                 $this->notifikasi->permohonanBerubah($permohonan, $templat);
             }
+
+            // Giliran kerja berpindah peran; peran berikutnya perlu tahu.
+            $this->lonceng->permohonanBerpindah($permohonan, $ke);
 
             return $permohonan->refresh();
         });

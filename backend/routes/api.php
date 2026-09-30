@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DataPribadiController;
 use App\Http\Controllers\Api\KataSandiController;
+use App\Http\Controllers\Api\PreferensiNotifikasiController;
 use App\Http\Controllers\Api\Publik;
 use App\Http\Controllers\Api\VerifikasiSurelController;
 use App\Http\Controllers\Api\Warga;
@@ -114,6 +115,10 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/data-pribadi/unduh', [DataPribadiController::class, 'unduh']);
         Route::post('auth/data-pribadi/penghapusan', [DataPribadiController::class, 'ajukanPenghapusan']);
 
+        // REQ-F-NOT-006: kanal notifikasi diatur pemilik akun sendiri.
+        Route::get('auth/preferensi-notifikasi', [PreferensiNotifikasiController::class, 'tampil']);
+        Route::put('auth/preferensi-notifikasi', [PreferensiNotifikasiController::class, 'simpan']);
+
         Route::prefix('permohonan')->group(function () {
             Route::get('/', [Warga\PermohonanController::class, 'index']);
             Route::post('/', [Warga\PermohonanController::class, 'store'])->middleware('throttle:unggah');
@@ -128,6 +133,11 @@ Route::prefix('v1')->group(function () {
     /* --------------------------------------------------------- Panel administrasi */
     Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::get('dashboard', Admin\DashboardController::class)->middleware('izin:dashboard.lihat');
+
+        // Lonceng pekerjaan baru; terbuka bagi seluruh petugas (REQ-F-NOT-005).
+        Route::get('notifikasi', [Admin\NotifikasiController::class, 'index']);
+        Route::post('notifikasi/baca-semua', [Admin\NotifikasiController::class, 'bacaSemua']);
+        Route::post('notifikasi/{notifikasi}/baca', [Admin\NotifikasiController::class, 'baca']);
 
         // Antrean layanan surat
         Route::prefix('permohonan')->group(function () {
