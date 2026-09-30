@@ -14,7 +14,7 @@ export function Galeri() {
   const { data, isPending, error } = useQuery({
     queryKey: ['galeri'],
     queryFn: async () =>
-      (await api.get<{ data: { id: number; nama: string; slug: string; deskripsi: string | null; tanggal_kegiatan: string | null; media_count: number }[] }>('/galeri')).data,
+      (await api.get<{ data: { id: number; nama: string; slug: string; deskripsi: string | null; tanggal_kegiatan: string | null; media_count: number; video_count: number }[] }>('/galeri')).data,
   })
 
   if (error) return <GalatMuat pesan={pesanGalat(error)} />
@@ -33,15 +33,18 @@ export function Galeri() {
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {data.data.map((album) => (
             <li key={album.id}>
-              <Kartu className="h-full">
-                <IsiKartu>
-                  <h2 className="text-base">{album.nama}</h2>
-                  <p className="mt-1 text-sm text-slate-600">{album.deskripsi}</p>
-                  <p className="mt-2 text-xs text-slate-500">
-                    {album.media_count} foto · {tanggal(album.tanggal_kegiatan)}
-                  </p>
-                </IsiKartu>
-              </Kartu>
+              <Link to={`/galeri/${album.slug}`} className="block h-full focus:outline-none focus:ring-2 focus:ring-desa-600 rounded-xl">
+                <Kartu className="h-full transition-colors hover:border-desa-300">
+                  <IsiKartu>
+                    <h2 className="text-base text-desa-800">{album.nama}</h2>
+                    <p className="mt-1 text-sm text-slate-600">{album.deskripsi}</p>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {album.media_count} foto
+                      {album.video_count > 0 && ` · ${album.video_count} video`} · {tanggal(album.tanggal_kegiatan)}
+                    </p>
+                  </IsiKartu>
+                </Kartu>
+              </Link>
             </li>
           ))}
         </ul>

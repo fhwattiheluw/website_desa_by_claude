@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { Menu, Search, X } from 'lucide-react'
 import { useProfilDesa } from '@/lib/kueri'
 import { useCatatKunjungan } from '@/lib/analitik'
@@ -7,19 +7,9 @@ import { useAuth } from '@/lib/auth'
 import { Tombol } from '@/components/ui/Tombol'
 import { PengaturanTampilan } from '@/components/ui/PengaturanTampilan'
 import { RemahRoti } from '@/components/layout/RemahRoti'
+import { MenuUtama } from '@/components/layout/MenuUtama'
 
-/** Navigasi utama maksimal tujuh butir tingkat pertama (REQ-UI-003). */
 const TAHUN_BERJALAN = new Date().getFullYear()
-
-const MENU = [
-  { ke: '/', teks: 'Beranda' },
-  { ke: '/profil', teks: 'Profil Desa' },
-  { ke: '/berita', teks: 'Informasi' },
-  { ke: '/transparansi/apbdes', teks: 'Transparansi' },
-  { ke: '/layanan', teks: 'Layanan' },
-  { ke: '/pengaduan', teks: 'Partisipasi' },
-  { ke: '/potensi/umkm', teks: 'Potensi Desa' },
-]
 
 export function TataLetakPublik() {
   const { data: desa } = useProfilDesa()
@@ -106,27 +96,7 @@ export function TataLetakPublik() {
           </div>
         </div>
 
-        <nav id="menu-utama" aria-label="Navigasi utama" className="border-t border-slate-100 bg-white">
-          <ul
-            className={`mx-auto max-w-6xl gap-1 px-2 lg:flex ${menuTerbuka ? 'block pb-2' : 'hidden lg:flex'}`}
-          >
-            {MENU.map((butir) => (
-              <li key={butir.ke}>
-                <NavLink
-                  to={butir.ke}
-                  onClick={() => setMenuTerbuka(false)}
-                  className={({ isActive }) =>
-                    `block min-h-11 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                      isActive ? 'bg-desa-50 text-desa-800' : 'text-slate-700 hover:bg-slate-100'
-                    }`
-                  }
-                >
-                  {butir.teks}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <MenuUtama terbuka={menuTerbuka} onPindah={() => setMenuTerbuka(false)} />
       </header>
 
       <main id="konten-utama" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
@@ -178,6 +148,11 @@ export function TataLetakPublik() {
             <p className="text-sm text-slate-600">
               <Link to="/syarat-penggunaan" className="underline underline-offset-2 hover:text-desa-700">
                 Syarat penggunaan
+              </Link>
+            </p>
+            <p className="text-sm text-slate-600">
+              <Link to="/dokumentasi-api" className="underline underline-offset-2 hover:text-desa-700">
+                Dokumentasi API data terbuka
               </Link>
             </p>
           </div>

@@ -27,6 +27,11 @@ Backend berperan sebagai API murni; frontend adalah aplikasi satu halaman yang
 mengonsumsinya melalui `/api/v1`. Keduanya dapat dipasang pada satu server
 maupun terpisah.
 
+Daftar titik akhir tersedia sebagai berkas OpenAPI 3.1 di `/api/v1/openapi.json`
+dan sebagai halaman yang dapat dibaca langsung di `/dokumentasi-api`. Keduanya
+dibangkitkan dari tabel rute aplikasi, sehingga tidak dapat tertinggal dari
+kodenya.
+
 ## Menjalankan secara lokal
 
 ### 1. Backend
@@ -71,7 +76,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 180 uji, 804 asersi
+cd backend && ./vendor/bin/phpunit      # 207 uji, 893 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -286,12 +291,16 @@ tingkat keparahan dan pengenal korelasi.
 | — | Notifikasi dan kalender | Terimplementasi: lonceng pekerjaan baru bagi petugas, preferensi kanal notifikasi bagi warga, dan kalender agenda bulanan |
 | — | Formulir permohonan bertahap | Terimplementasi: pengisian dipecah menjadi langkah dengan indikator kemajuan, validasi per langkah, dan langkah tinjau sebelum kirim |
 | — | Partisipasi dan penyajian | Terimplementasi: komentar bermoderasi, keberatan informasi publik, terpopuler, produk unggulan bergilir, pembanding antarperiode, dan penunjuk arah |
+| — | Keamanan akun dan kearsipan | Terimplementasi: otentikasi dua faktor bagi peran berwenang, pemindaian perangkat perusak pada unggahan, riwayat masuk pada halaman akun, dan pengunduhan massal surat terbit |
+| — | Menu, galeri, dan dokumentasi API | Terimplementasi: pengelola menu navigasi dua tingkat, album galeri beserta video tersemat yang tidak menghubungi penyedia sebelum ditekan, dan dokumentasi OpenAPI yang dibangkitkan dari tabel rute |
 
-Dari 218 kebutuhan pada SRS: 183 terimplementasi, 4 terimplementasi sebagian,
-6 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
-berlaku pada arsitektur yang dipilih. **Seluruh kebutuhan Must yang dapat
-dikerjakan sudah dikerjakan**; dua butir Must yang tersisa — REQ-F-SRT-017 dan
-REQ-SW-004 — tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada
-kode. Rincian
-per butir beserta alasannya ada pada
+Dari 218 kebutuhan pada SRS: 189 terimplementasi, 4 terimplementasi sebagian,
+22 menunggu pengukuran atau penyiapan server, dan 3 tidak berlaku pada
+arsitektur yang dipilih. **Tidak ada lagi kebutuhan yang belum dikerjakan.**
+Dari empat butir yang berstatus sebagian, tiga tertahan di luar kode:
+REQ-F-SRT-017 dan REQ-SW-004 menunggu terbitnya sertifikat elektronik (OI-02),
+dan REQ-NF-SEC-008 menunggu daemon pemindai dipasang pada server desa. Satu
+butir sisanya, REQ-F-ADM-010, sengaja tidak dilengkapi karena penghitungan
+pengunjung unik bertentangan dengan REQ-SW-006. Rincian per butir beserta
+alasannya ada pada
 [bagian 4 matriks ketertelusuran](docs/KETERTELUSURAN.md#4-status-pemenuhan-kebutuhan).

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Album;
 use App\Models\JenisLayanan;
 use App\Models\Konten;
 use App\Models\Pengaturan;
@@ -32,6 +33,10 @@ class MetadataHalaman
         '/pengumuman' => ['Pengumuman', 'Pengumuman resmi pemerintah desa yang masih berlaku.'],
         '/agenda' => ['Agenda Kegiatan', 'Jadwal kegiatan dan musyawarah desa.'],
         '/galeri' => ['Galeri Kegiatan', 'Dokumentasi kegiatan pemerintah desa dan masyarakat.'],
+        '/dokumentasi-api' => [
+            'Dokumentasi API',
+            'Daftar titik akhir API portal desa beserta izin dan batas lajunya, dalam format OpenAPI 3.1.',
+        ],
         '/layanan' => ['Katalog Layanan', 'Daftar surat dan layanan administrasi yang dapat diajukan secara daring.'],
         '/layanan/verifikasi' => ['Verifikasi Surat', 'Periksa keaslian surat yang diterbitkan pemerintah desa melalui kode verifikasi.'],
         '/transparansi/apbdes' => ['Transparansi APBDes', 'Rincian pendapatan, belanja, dan realisasi anggaran pendapatan dan belanja desa.'],
@@ -136,7 +141,7 @@ class MetadataHalaman
          */
         $bagian = explode('/', trim($jalur, '/'));
         $berpolaRinci = count($bagian) === 2
-            && in_array($bagian[0], [...Konten::TIPE, 'layanan'], true);
+            && in_array($bagian[0], [...Konten::TIPE, 'layanan', 'galeri'], true);
 
         return $berpolaRinci ? [...$dasar, 'ditemukan' => false, 'diindeks' => false] : $dasar;
     }
@@ -174,6 +179,32 @@ class MetadataHalaman
                     'datePublished' => $konten->terbit_pada?->toIso8601String(),
                     'dateModified' => $konten->updated_at?->toIso8601String(),
                     'image' => $konten->gambar?->url(),
+                    'publisher' => ['@type' => 'GovernmentOrganization', 'name' => $namaSitus],
+                    'mainEntityOfPage' => $dasar['kanonik'],
+                ]),
+            ];
+        }
+
+        if (count($bagian) === 2 && $bagian[0] === 'galeri') {
+            $album = Album::withCount('media', 'video')->where('slug', $bagian[1])->first();
+
+            if (! $album) {
+                return null;
+            }
+
+            return [
+                ...$dasar,
+                'dikenali' => true,
+                'judul' => $album->nama.' — '.$namaSitus,
+                'deskripsi' => Str::limit((string) $album->deskripsi, 180)
+                    ?: 'Dokumentasi kegiatan '.$album->nama.' berupa '.$album->media_count.' foto dan '
+                        .$album->video_count.' video.',
+                'jenis' => 'article',
+                'terstruktur' => array_filter([
+                    '@type' => 'ImageGallery',
+                    'name' => $album->nama,
+                    'description' => $album->deskripsi,
+                    'datePublished' => $album->tanggal_kegiatan?->toDateString(),
                     'publisher' => ['@type' => 'GovernmentOrganization', 'name' => $namaSitus],
                     'mainEntityOfPage' => $dasar['kanonik'],
                 ]),

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  BarChart3, Building2, Eye, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquare, MessageSquareWarning,
+  BarChart3, Building2, Eye, FileText, Files, Gauge, Images, Inbox, ListTree, LogOut, Menu, MessageSquare, MessageSquareWarning,
   PenLine, Settings, ShieldCheck, UserX, Users, X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
@@ -21,6 +21,7 @@ const MENU: ButirMenu[] = [
   { ke: '/admin/pengaduan', teks: 'Pengaduan', ikon: MessageSquareWarning, izin: ['pengaduan.lihat'] },
   { ke: '/admin/konten', teks: 'Konten', ikon: FileText, izin: ['konten.kelola'] },
   { ke: '/admin/moderasi', teks: 'Moderasi', ikon: MessageSquare, izin: ['konten.kelola'] },
+  { ke: '/admin/galeri', teks: 'Galeri', ikon: Images, izin: ['konten.kelola'] },
   { ke: '/admin/apbdes', teks: 'APBDes', ikon: BarChart3, izin: ['apbdes.kelola'] },
   { ke: '/admin/bumdes', teks: 'BUMDes', ikon: Building2, izin: ['bumdes.kelola'] },
   { ke: '/admin/pengguna', teks: 'Pengguna', ikon: Users, izin: ['pengguna.lihat'] },
@@ -29,6 +30,7 @@ const MENU: ButirMenu[] = [
   { ke: '/admin/permintaan-data', teks: 'Hak Subjek Data', ikon: UserX, izin: ['data_pribadi.kelola'] },
   { ke: '/admin/analitik', teks: 'Statistik Kunjungan', ikon: Eye, izin: ['laporan.lihat'] },
   { ke: '/admin/audit-log', teks: 'Audit Log', ikon: ShieldCheck, izin: ['audit.lihat'] },
+  { ke: '/admin/menu', teks: 'Menu Navigasi', ikon: ListTree, izin: ['pengaturan.kelola'] },
   { ke: '/admin/pengaturan', teks: 'Pengaturan', ikon: Settings, izin: ['pengaturan.kelola'] },
 ]
 

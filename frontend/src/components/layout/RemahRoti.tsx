@@ -15,6 +15,7 @@ const NAMA_RUAS: Record<string, string> = {
   statistik: 'Statistik Desa',
   'produk-hukum': 'Produk Hukum',
   ppid: 'PPID',
+  'dokumentasi-api': 'Dokumentasi API',
   permohonan: 'Permohonan',
   layanan: 'Layanan',
   verifikasi: 'Verifikasi Surat',

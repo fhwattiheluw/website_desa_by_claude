@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Album;
 use App\Models\Konten;
 use App\Services\MetadataHalaman;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -165,5 +166,30 @@ class MetadataHalamanTest extends TestCase
         config()->set('app.dist', storage_path('framework/testing/tidak-ada'));
 
         $this->get('/profil')->assertRedirect('https://sukamaju.desa.id');
+    }
+
+    /** REQ-F-GAL-005: album galeri memperoleh judul dan data terstrukturnya sendiri. */
+    public function test_album_galeri_memiliki_metadata_sendiri(): void
+    {
+        Album::create([
+            'nama' => 'Kerja Bakti Dusun Satu',
+            'slug' => 'kerja-bakti-dusun-satu',
+            'deskripsi' => 'Dokumentasi gotong royong warga membersihkan saluran air.',
+        ]);
+
+        $meta = app(MetadataHalaman::class)->untuk('/galeri/kerja-bakti-dusun-satu');
+
+        $this->assertTrue($meta['dikenali']);
+        $this->assertStringContainsString('Kerja Bakti Dusun Satu', $meta['judul']);
+        $this->assertSame('ImageGallery', $meta['terstruktur']['@type']);
+    }
+
+    /** Album yang tidak ada dijawab 404, bukan kerangka kosong berstatus 200. */
+    public function test_album_tidak_ada_tidak_ditemukan(): void
+    {
+        $meta = app(MetadataHalaman::class)->untuk('/galeri/tidak-pernah-ada');
+
+        $this->assertFalse($meta['ditemukan']);
+        $this->assertFalse($meta['diindeks']);
     }
 }

@@ -35,6 +35,8 @@ import {
 const Apbdes = lazy(() => import('@/pages/publik/Apbdes').then((m) => ({ default: m.Apbdes })))
 const Statistik = lazy(() => import('@/pages/publik/Statistik').then((m) => ({ default: m.Statistik })))
 const ProdukHukum = lazy(() => import('@/pages/publik/Pustaka').then((m) => ({ default: m.ProdukHukum })))
+const AlbumGaleri = lazy(() => import('@/pages/publik/AlbumGaleri').then((m) => ({ default: m.AlbumGaleri })))
+const DokumentasiApi = lazy(() => import('@/pages/publik/DokumentasiApi').then((m) => ({ default: m.DokumentasiApi })))
 const Ppid = lazy(() => import('@/pages/publik/Pustaka').then((m) => ({ default: m.Ppid })))
 const PermohonanInformasi = lazy(() =>
   import('@/pages/publik/PermohonanInformasi').then((m) => ({ default: m.PermohonanInformasi })),
@@ -67,6 +69,8 @@ const KelolaApbdes = lazy(() => import('@/pages/admin/KelolaApbdes').then((m) =>
 const Laporan = lazy(() => import('@/pages/admin/Laporan').then((m) => ({ default: m.Laporan })))
 const AuditLog = lazy(() => import('@/pages/admin/AuditLog').then((m) => ({ default: m.AuditLog })))
 const PengaturanSitus = lazy(() => import('@/pages/admin/Pengaturan').then((m) => ({ default: m.Pengaturan })))
+const KelolaMenu = lazy(() => import('@/pages/admin/KelolaMenu').then((m) => ({ default: m.KelolaMenu })))
+const KelolaGaleri = lazy(() => import('@/pages/admin/KelolaGaleri').then((m) => ({ default: m.KelolaGaleri })))
 const KelolaBumdes = lazy(() => import('@/pages/admin/KelolaBumdes').then((m) => ({ default: m.KelolaBumdes })))
 const TandaTangan = lazy(() => import('@/pages/admin/TandaTangan').then((m) => ({ default: m.TandaTangan })))
 const PermintaanData = lazy(() =>
@@ -107,6 +111,7 @@ export default function App() {
                 <Route path="agenda" element={<DaftarKonten tipe="agenda" />} />
                 <Route path="agenda/:slug" element={<DetailKonten tipe="agenda" />} />
                 <Route path="galeri" element={<Galeri />} />
+                <Route path="galeri/:slug" element={<AlbumGaleri />} />
 
                 <Route path="transparansi/apbdes" element={<Apbdes />} />
                 <Route path="transparansi/statistik" element={<Statistik />} />
@@ -140,6 +145,7 @@ export default function App() {
                 <Route path="kebijakan-privasi" element={<KebijakanPrivasi />} />
                 <Route path="syarat-penggunaan" element={<SyaratPenggunaan />} />
                 <Route path="aksesibilitas" element={<Aksesibilitas />} />
+                <Route path="dokumentasi-api" element={<DokumentasiApi />} />
 
                 <Route path="masuk" element={<Masuk />} />
                 <Route path="daftar" element={<Daftar />} />
@@ -189,6 +195,8 @@ export default function App() {
                 <Route path="bumdes" element={<KelolaBumdes />} />
                 <Route path="tanda-tangan" element={<TandaTangan />} />
                 <Route path="pengaturan" element={<PengaturanSitus />} />
+                <Route path="menu" element={<KelolaMenu />} />
+                <Route path="galeri" element={<KelolaGaleri />} />
               </Route>
             </Routes>
             </Suspense>

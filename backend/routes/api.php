@@ -59,6 +59,11 @@ Route::prefix('v1')->group(function () {
         Route::get('umkm', [Publik\PotensiController::class, 'umkm']);
         Route::get('wisata', [Publik\PotensiController::class, 'wisata']);
         Route::get('bumdes', Publik\BumdesController::class);
+        // REQ-API-004: dokumentasi OpenAPI, dibangkitkan dari tabel rute.
+        Route::get('openapi.json', Publik\DokumentasiController::class);
+
+        // REQ-F-ADM-003: susunan menu navigasi yang dipakai portal publik.
+        Route::get('menu', Publik\MenuController::class);
         Route::get('lembaga', [Publik\LembagaController::class, 'index']);
         Route::get('lembaga/{slug}', [Publik\LembagaController::class, 'show']);
     });
@@ -185,6 +190,11 @@ Route::prefix('v1')->group(function () {
             Route::put('{media}', [Admin\MediaController::class, 'update']);
             Route::delete('{media}', [Admin\MediaController::class, 'destroy']);
             Route::match(['get', 'post'], 'album/daftar', [Admin\MediaController::class, 'album']);
+
+            // REQ-F-GAL-006: video dari penyedia eksternal pada album galeri.
+            Route::get('album/{album}/video', [Admin\VideoAlbumController::class, 'index']);
+            Route::post('album/{album}/video', [Admin\VideoAlbumController::class, 'simpan']);
+            Route::delete('album/{album}/video/{video}', [Admin\VideoAlbumController::class, 'hapus']);
         });
 
         // Pengaduan
@@ -265,6 +275,15 @@ Route::prefix('v1')->group(function () {
         // Pengaturan situs dan audit
         Route::get('pengaturan', [Admin\PengaturanController::class, 'index'])->middleware('izin:pengaturan.kelola');
         Route::put('pengaturan', [Admin\PengaturanController::class, 'update'])->middleware('izin:pengaturan.kelola');
+
+        // REQ-F-ADM-003: pengelola menu navigasi.
+        Route::prefix('menu')->middleware('izin:pengaturan.kelola')->group(function () {
+            Route::get('/', [Admin\MenuController::class, 'index']);
+            Route::post('/', [Admin\MenuController::class, 'simpan']);
+            Route::post('urutkan', [Admin\MenuController::class, 'urutkan']);
+            Route::put('{menu}', [Admin\MenuController::class, 'simpan']);
+            Route::delete('{menu}', [Admin\MenuController::class, 'hapus']);
+        });
         Route::get('audit-log', [Admin\AuditLogController::class, 'index'])->middleware('izin:audit.lihat');
         Route::get('analitik', Admin\AnalitikController::class)->middleware('izin:laporan.lihat');
 

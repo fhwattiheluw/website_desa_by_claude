@@ -23,4 +23,10 @@ class Album extends Model
     {
         return $this->hasMany(Media::class);
     }
+
+    /** REQ-F-GAL-006: video dari penyedia eksternal yang disematkan pada album. */
+    public function video(): HasMany
+    {
+        return $this->hasMany(VideoAlbum::class)->orderBy('urutan');
+    }
 }

@@ -38,6 +38,39 @@ export function useAnalitikAktif() {
   return useQuery({ ...KUERI_PROFIL, select: (jawaban: JawabanProfil) => jawaban.analitik_aktif })
 }
 
+export interface ButirMenu {
+  label: string
+  tautan: string | null
+  anak: { label: string; tautan: string | null }[]
+}
+
+/**
+ * Susunan menu bawaan (REQ-F-ADM-003).
+ *
+ * Dipakai selama menu dari server belum termuat dan bila permintaannya gagal.
+ * Navigasi yang lenyap karena satu permintaan gagal membuat seluruh portal
+ * tampak rusak, padahal isinya baik-baik saja.
+ */
+export const MENU_BAWAAN: ButirMenu[] = [
+  { label: 'Beranda', tautan: '/', anak: [] },
+  { label: 'Profil Desa', tautan: '/profil', anak: [] },
+  { label: 'Informasi', tautan: '/berita', anak: [] },
+  { label: 'Transparansi', tautan: '/transparansi/apbdes', anak: [] },
+  { label: 'Layanan', tautan: '/layanan', anak: [] },
+  { label: 'Partisipasi', tautan: '/pengaduan', anak: [] },
+  { label: 'Potensi Desa', tautan: '/potensi/umkm', anak: [] },
+]
+
+export function useMenuNavigasi() {
+  const { data } = useQuery({
+    queryKey: ['menu-navigasi'],
+    queryFn: async () => (await api.get<{ data: ButirMenu[] }>('/menu')).data.data,
+    staleTime: 30 * 60 * 1000,
+  })
+
+  return data?.length ? data : MENU_BAWAAN
+}
+
 export function useBeranda<T = unknown>() {
   return useQuery<T>({
     queryKey: ['beranda'],
