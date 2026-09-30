@@ -36,12 +36,69 @@ class StatistikController extends Controller
                 'tahun' => $periode->tahun,
                 'sumber_data' => $periode->sumber_data,
             ],
+            // REQ-F-STA-004: pembanding dengan periode sebelumnya.
+            'pembanding' => $this->pembanding($periode),
             'total_penduduk' => (int) $periode->item->where('kelompok', 'jenis_kelamin')->sum('jumlah'),
             'total_kk' => (int) $periode->item->where('kelompok', 'kepala_keluarga')->sum('jumlah'),
             'kelompok' => $kelompok,
             'catatan_privasi' => 'Kelompok dengan jumlah di bawah '.self::AMBANG_ANONIMITAS
                 .' jiwa disamarkan untuk mencegah identifikasi ulang individu.',
         ]);
+    }
+
+    /**
+     * Perubahan terhadap periode sebelumnya.
+     *
+     * Angka mentah statistik desa sulit dimaknai tanpa pembanding: 4.120 jiwa
+     * baru berarti sesuatu bila diketahui tahun lalu 4.005. Kelompok yang
+     * disamarkan karena BR-15 tidak ikut dibandingkan — selisihnya justru dapat
+     * dipakai menyimpulkan angka yang sengaja disembunyikan.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function pembanding(PeriodeStatistik $periode): ?array
+    {
+        $sebelumnya = PeriodeStatistik::where('tahun', '<', $periode->tahun)
+            ->orderByDesc('tahun')
+            ->first();
+
+        if (! $sebelumnya) {
+            return null;
+        }
+
+        $sebelumnya->load('item');
+
+        $totalKini = (int) $periode->item->where('kelompok', 'jenis_kelamin')->sum('jumlah');
+        $totalLalu = (int) $sebelumnya->item->where('kelompok', 'jenis_kelamin')->sum('jumlah');
+
+        $lalu = $sebelumnya->item
+            ->filter(fn ($i) => $i->jumlah >= self::AMBANG_ANONIMITAS)
+            ->keyBy(fn ($i) => $i->kelompok.'|'.$i->label);
+
+        $perKelompok = $periode->item
+            ->filter(fn ($i) => $i->jumlah >= self::AMBANG_ANONIMITAS)
+            ->map(function ($i) use ($lalu) {
+                $pasangan = $lalu->get($i->kelompok.'|'.$i->label);
+
+                return $pasangan ? [
+                    'kelompok' => $i->kelompok,
+                    'label' => $i->label,
+                    'kini' => (int) $i->jumlah,
+                    'sebelumnya' => (int) $pasangan->jumlah,
+                    'selisih' => (int) $i->jumlah - (int) $pasangan->jumlah,
+                ] : null;
+            })
+            ->filter()
+            ->values();
+
+        return [
+            'periode' => ['id' => $sebelumnya->id, 'nama' => $sebelumnya->nama, 'tahun' => $sebelumnya->tahun],
+            'total_penduduk' => $totalLalu,
+            'selisih_total' => $totalKini - $totalLalu,
+            'per_kelompok' => $perKelompok,
+            'catatan' => 'Kelompok yang disamarkan tidak ikut dibandingkan, sebab selisihnya dapat dipakai '
+                .'menyimpulkan angka yang sengaja disembunyikan.',
+        ];
     }
 
     public function periode(): JsonResponse

@@ -124,7 +124,11 @@ export function Profil() {
             deskripsi="Kantor desa dan fasilitas umum utama. Peta dimuat setelah Anda menggulir ke bagian ini."
           />
           <IsiKartu>
-            <Peta titik={titikPeta} judul={t('profil.peta')} />
+            <Peta
+              titik={titikPeta}
+              judul={t('profil.peta')}
+              arahKe={titikPeta.find((satu) => satu.utama) ?? null}
+            />
           </IsiKartu>
         </Kartu>
       )}

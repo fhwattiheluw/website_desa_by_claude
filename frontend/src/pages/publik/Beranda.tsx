@@ -4,10 +4,11 @@ import { useBeranda } from '@/lib/kueri'
 import { angka, tanggal, tanggalRelatif } from '@/lib/format'
 import { pesanGalat } from '@/lib/api'
 import { useDataTerstruktur, useMeta } from '@/lib/meta'
-import { Kartu, KartuStatistik } from '@/components/ui/Kartu'
+import { Kartu, KartuStatistik, IsiKartu } from '@/components/ui/Kartu'
 import { TautanTombol } from '@/components/ui/Tombol'
 import { GalatMuat, Rangka } from '@/components/ui/Status'
 import { Lencana } from '@/components/ui/Lencana'
+import { Bergilir } from '@/components/ui/Bergilir'
 import type { Konten } from '@/types'
 
 interface DataBeranda {
@@ -20,6 +21,14 @@ interface DataBeranda {
   agenda: Konten[]
   statistik: { periode: string; total_penduduk: number } | null
   sambutan: { nama: string | null; jabatan: string; foto: string | null; kutipan: string } | null
+  terpopuler: Konten[]
+  produk_unggulan: {
+    nama_usaha: string
+    slug: string
+    kategori: string
+    deskripsi: string | null
+    foto: string | null
+  }[]
 }
 
 const TAUTAN_CEPAT = [
@@ -103,6 +112,72 @@ export function Beranda() {
           ))}
         </div>
       </section>
+
+      {(data?.produk_unggulan.length ?? 0) > 0 && (
+        <section aria-labelledby="produk-unggulan">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <h2 id="produk-unggulan" className="text-xl">
+              Produk Unggulan Desa
+            </h2>
+            <Link to="/potensi/umkm" className="inline-flex items-center gap-1 text-sm font-medium text-desa-700 hover:underline">
+              Direktori UMKM <ArrowRight aria-hidden className="size-4" />
+            </Link>
+          </div>
+
+          <Bergilir jumlah={data!.produk_unggulan.length} judul="Produk unggulan">
+            {(indeks) => {
+              const produk = data!.produk_unggulan[indeks]
+
+              return (
+                <Kartu>
+                  <div className="flex flex-col gap-5 sm:flex-row">
+                    {produk.foto && (
+                      <img
+                        src={produk.foto}
+                        alt=""
+                        loading="lazy"
+                        className="h-40 w-full rounded-t-xl object-cover sm:h-auto sm:w-48 sm:rounded-l-xl sm:rounded-tr-none"
+                      />
+                    )}
+                    <IsiKartu className="flex-1">
+                      <Lencana>{produk.kategori}</Lencana>
+                      <h3 className="mt-2 text-base">{produk.nama_usaha}</h3>
+                      {produk.deskripsi && <p className="mt-1 text-sm text-slate-600">{produk.deskripsi}</p>}
+                    </IsiKartu>
+                  </div>
+                </Kartu>
+              )
+            }}
+          </Bergilir>
+        </section>
+      )}
+
+      {(data?.terpopuler.length ?? 0) > 0 && (
+        <section aria-labelledby="terpopuler">
+          <h2 id="terpopuler" className="mb-4 text-xl">
+            Terpopuler
+          </h2>
+          <Kartu>
+            <ol className="divide-y divide-slate-100">
+              {data!.terpopuler.map((konten, urutan) => (
+                <li key={konten.id} className="flex items-start gap-3 px-5 py-3">
+                  <span aria-hidden className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-desa-50 text-xs font-semibold text-desa-800">
+                    {urutan + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <Link to={`/${konten.tipe}/${konten.slug}`} className="font-medium hover:text-desa-700">
+                      {konten.judul}
+                    </Link>
+                    <span className="mt-0.5 block text-xs text-slate-500">
+                      {angka(konten.dibaca ?? 0)} kali dibaca · {tanggal(konten.terbit_pada)}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </Kartu>
+        </section>
+      )}
 
       {data?.sambutan && (
         <section aria-labelledby="sambutan-kepala-desa">

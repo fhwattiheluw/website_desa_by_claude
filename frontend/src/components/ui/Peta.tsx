@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { MapPin } from 'lucide-react'
+import { MapPin, Navigation } from 'lucide-react'
 
 export interface TitikPeta {
   nama: string
@@ -23,11 +23,14 @@ export function Peta({
   tinggi = 380,
   zum = 14,
   judul,
+  arahKe,
 }: {
   titik: TitikPeta[]
   tinggi?: number
   zum?: number
   judul: string
+  /** Titik tujuan penunjuk arah, bila halaman ini memang menyediakannya. */
+  arahKe?: TitikPeta | null
 }) {
   const wadah = useRef<HTMLDivElement>(null)
   // Peramban tanpa IntersectionObserver langsung memuat peta, bukan tidak sama
@@ -124,6 +127,22 @@ export function Peta({
         <p className="mt-2 text-sm text-slate-600">
           Peta tidak dapat dimuat. Daftar lokasi di bawah tetap dapat digunakan.
         </p>
+      )}
+
+      {/*
+        * REQ-F-BRD-008: penunjuk arah diserahkan ke layanan peta yang sudah
+        * ada di perangkat warga, bukan dihitung sendiri. Rute memerlukan data
+        * jalan yang mutakhir, dan itu di luar yang dapat dijaga desa.
+        */}
+      {arahKe && (
+        <a
+          href={`https://www.openstreetmap.org/directions?to=${arahKe.lat}%2C${arahKe.lng}`}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-medium hover:bg-slate-50"
+        >
+          <Navigation aria-hidden className="size-4" /> Petunjuk Arah ke {arahKe.nama}
+        </a>
       )}
 
       {/* Padanan teks: peta bukan satu-satunya jalan ke informasinya. */}

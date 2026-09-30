@@ -123,8 +123,6 @@ class TransparansiSeeder extends Seeder
             ['tahun' => now()->year, 'sumber_data' => 'Pendataan Profil Desa dan Kelurahan', 'aktif' => true],
         );
 
-        $periode->item()->delete();
-
         $data = [
             'jenis_kelamin' => ['Laki-laki' => 2148, 'Perempuan' => 2076],
             'kepala_keluarga' => ['Kepala Keluarga' => 1342],
@@ -136,6 +134,29 @@ class TransparansiSeeder extends Seeder
             'agama' => ['Islam' => 4102, 'Kristen' => 78, 'Katolik' => 31, 'Hindu' => 9, 'Buddha' => 4],
             'dusun' => ['Dusun Mekar' => 1184, 'Dusun Sukasari' => 1093, 'Dusun Cibodas' => 1047, 'Dusun Tegalsari' => 900],
         ];
+
+        $this->isiPeriode($periode, $data);
+
+        /*
+         * Periode tahun sebelumnya dibuat agar pembanding antarperiode
+         * (REQ-F-STA-004) benar-benar punya pasangan. Angkanya diturunkan
+         * sekitar dua persen agar pertumbuhan terlihat wajar.
+         */
+        $lalu = PeriodeStatistik::updateOrCreate(
+            ['nama' => 'Semester II '.(now()->year - 1)],
+            ['tahun' => now()->year - 1, 'sumber_data' => 'Pendataan Profil Desa dan Kelurahan', 'aktif' => false],
+        );
+
+        $this->isiPeriode($lalu, array_map(
+            fn (array $butir) => array_map(fn (int $jumlah) => (int) round($jumlah * 0.98), $butir),
+            $data,
+        ));
+    }
+
+    /** @param array<string, array<string, int>> $data */
+    private function isiPeriode(PeriodeStatistik $periode, array $data): void
+    {
+        $periode->item()->delete();
 
         $urutan = 0;
 

@@ -15,12 +15,12 @@ class Umkm extends Model
 
     protected $fillable = [
         'media_id', 'diajukan_oleh', 'nama_usaha', 'slug', 'pemilik', 'kategori',
-        'deskripsi', 'telepon', 'alamat', 'consent_kontak', 'status',
+        'deskripsi', 'telepon', 'alamat', 'consent_kontak', 'status', 'unggulan',
     ];
 
     protected function casts(): array
     {
-        return ['consent_kontak' => 'boolean'];
+        return ['consent_kontak' => 'boolean', 'unggulan' => 'boolean'];
     }
 
     public function media(): BelongsTo

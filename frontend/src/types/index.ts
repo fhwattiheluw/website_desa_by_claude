@@ -140,8 +140,17 @@ export interface ItemStatistik {
   disamarkan: boolean
 }
 
+export interface PembandingStatistik {
+  periode: { id: number; nama: string; tahun: number }
+  total_penduduk: number
+  selisih_total: number
+  per_kelompok: { kelompok: string; label: string; kini: number; sebelumnya: number; selisih: number }[]
+  catatan: string
+}
+
 export interface Statistik {
   periode: { id: number; nama: string; tahun: number; sumber_data: string | null }
+  pembanding: PembandingStatistik | null
   total_penduduk: number
   total_kk: number
   kelompok: Record<string, ItemStatistik[]>

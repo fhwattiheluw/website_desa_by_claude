@@ -10,6 +10,7 @@ use App\Models\Lembaga;
 use App\Models\Pengaturan;
 use App\Models\Pengurus;
 use App\Models\PeriodeStatistik;
+use App\Models\Umkm;
 use Illuminate\Http\JsonResponse;
 
 /** REQ-F-BRD-001: muatan halaman beranda dalam satu permintaan. */
@@ -39,6 +40,34 @@ class BerandaController extends Controller
                 Konten::tayang()->where('tipe', 'agenda')->where('mulai_pada', '>=', now()->startOfDay())
                     ->orderBy('mulai_pada')->take(4)->get()
             ),
+            /*
+             * REQ-F-KNT-009: daftar terpopuler dibatasi 90 hari terakhir.
+             * Tanpa batas waktu, satu tulisan lama yang pernah viral akan
+             * menempatinya selamanya dan daftar ini berhenti berguna.
+             */
+            'terpopuler' => KontenResource::collection(
+                Konten::tayang()
+                    ->whereIn('tipe', ['berita', 'artikel'])
+                    ->where('terbit_pada', '>=', now()->subDays(90))
+                    ->where('dibaca', '>', 0)
+                    ->orderByDesc('dibaca')
+                    ->take(5)
+                    ->get()
+            ),
+            // REQ-F-POT-007: produk unggulan desa, ditampilkan bergilir.
+            'produk_unggulan' => Umkm::tayang()
+                ->where('unggulan', true)
+                ->with('media')
+                ->inRandomOrder()
+                ->take(6)
+                ->get()
+                ->map(fn (Umkm $u) => [
+                    'nama_usaha' => $u->nama_usaha,
+                    'slug' => $u->slug,
+                    'kategori' => $u->kategori,
+                    'deskripsi' => $u->deskripsi,
+                    'foto' => $u->media?->url(),
+                ]),
             'statistik' => $periode ? [
                 'periode' => $periode->nama,
                 'sumber' => $periode->sumber_data,
