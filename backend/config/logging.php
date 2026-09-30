@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -62,6 +63,26 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
+        /*
+         * Log terstruktur satu baris satu objek JSON (REQ-NF-MNT-007).
+         *
+         * Setiap baris memuat tingkat keparahan, waktu, pesan, dan konteks —
+         * termasuk `korelasi` yang disematkan PengenalKorelasi. Bentuk ini
+         * dapat ditelusuri dengan `jq` tanpa alat khusus, dan siap diserap
+         * pengumpul log bila desa kelak memakainya.
+         *
+         * Aktifkan pada produksi dengan LOG_STACK=terstruktur.
+         */
+        'terstruktur' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/sidesa.json'),
+            'level' => env('LOG_LEVEL', 'info'),
+            'max_files' => env('LOG_DAILY_DAYS', 14),
+            'formatter' => JsonFormatter::class,
+            'formatter_with' => ['appendNewline' => true],
             'replace_placeholders' => true,
         ],
 

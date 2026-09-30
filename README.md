@@ -71,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 138 uji, 631 asersi
+cd backend && ./vendor/bin/phpunit      # 147 uji, 665 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -238,6 +238,20 @@ Perhatikan: Supabase Cloud tidak punya region Indonesia, sehingga berbenturan
 dengan CON-08 dan REQ-NF-CMP-007 (PP 71/2019). Rinciannya beserta jalur yang
 patuh ada pada [panduan operasional bagian 9](docs/OPERASIONAL.md#9-pilihan-basis-data).
 
+## Penelusuran galat
+
+Setiap permintaan memperoleh pengenal korelasi yang dikembalikan pada tajuk
+`X-Request-Id`, disertakan pada badan setiap respons galat, dan tersemat pada
+setiap baris log permintaan tersebut. Warga yang menemui gangguan cukup
+menyebutkan kode yang tampil di layar; petugas menemukan seluruh jejaknya dengan
+satu pencarian.
+
+Respons galat memuat `kode` yang stabil — misalnya `VALIDASI_GAGAL`,
+`AKSES_DITOLAK`, `ALUR_TIDAK_VALID` — sehingga klien dapat mengambil keputusan
+tanpa mencocokkan teks pesan yang boleh berubah. Pada produksi, setel
+`LOG_STACK=terstruktur` agar log terbit sebagai JSON satu baris lengkap dengan
+tingkat keparahan dan pengenal korelasi.
+
 ## Catatan keamanan dan perlindungan data
 
 - NIK warga dan kontak pelapor pengaduan disimpan terenkripsi; pencarian
@@ -268,9 +282,10 @@ patuh ada pada [panduan operasional bagian 9](docs/OPERASIONAL.md#9-pilihan-basi
 | — | Kepatuhan UU PDP, CI, dan analitik | Terimplementasi: CAPTCHA, Syarat Penggunaan, hak subjek data, retensi jejak audit, deteksi insiden, pipeline CI beserta pemindaian dependensi, dan analitik tanpa data pribadi |
 | — | Bagan organisasi dan peta wilayah | Terimplementasi: bagan struktur perangkat desa berjenjang, serta peta berpenanda kantor desa dan fasilitas umum yang dimuat secara malas |
 | — | Metadata halaman untuk perayap | Terimplementasi: kerangka aplikasi disajikan Laravel lengkap dengan judul, deskripsi, kanonik, Open Graph, dan data terstruktur |
+| — | Penelusuran galat dan penyempurnaan antarmuka | Terimplementasi: kode galat beserta pengenal korelasi, log terstruktur, remah roti, penyorotan kata kunci, pengambilan lampiran lewat kamera, dan sambutan kepala desa |
 
-Dari 218 kebutuhan pada SRS: 167 terimplementasi, 6 terimplementasi sebagian,
-20 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
+Dari 218 kebutuhan pada SRS: 173 terimplementasi, 4 terimplementasi sebagian,
+16 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
 berlaku pada arsitektur yang dipilih. **Seluruh kebutuhan Must yang dapat
 dikerjakan sudah dikerjakan**; dua butir Must yang tersisa — REQ-F-SRT-017 dan
 REQ-SW-004 — tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada

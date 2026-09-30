@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FasilitasUmum;
 use App\Models\Lembaga;
+use App\Models\Pengaturan;
 use App\Models\Pengurus;
 use Database\Seeders\PengaturanSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,6 +147,37 @@ class BaganOrganisasiTest extends TestCase
             // perlu menebak-nebak bentuknya.
             ->assertJsonPath('fasilitas_umum.0.koordinat.lat', -6.9147)
             ->assertJsonPath('fasilitas_umum.1.koordinat.lng', 107.1378);
+    }
+
+    /** REQ-F-BRD-007: sambutan diambil dari puncak bagan, bukan cocokan teks. */
+    public function test_sambutan_menunjuk_pengurus_di_puncak_bagan(): void
+    {
+        $this->seed(PengaturanSeeder::class);
+
+        $lembaga = $this->buatLembaga();
+        $kades = $this->buatPengurus($lembaga, 'Hartono Wijaya', 'Kepala Desa');
+        $this->buatPengurus($lembaga, 'Sri Rahayu', 'Sekretaris Desa', $kades);
+
+        $this->getJson('/api/v1/beranda')
+            ->assertOk()
+            ->assertJsonPath('sambutan.nama', 'Hartono Wijaya')
+            ->assertJsonPath('sambutan.jabatan', 'Kepala Desa');
+
+        // Jabatan boleh dituliskan berbeda; yang menentukan tetap posisinya
+        // pada bagan.
+        $kades->update(['jabatan' => 'Pj. Kepala Desa Sukamaju']);
+
+        $this->getJson('/api/v1/beranda')
+            ->assertOk()
+            ->assertJsonPath('sambutan.jabatan', 'Pj. Kepala Desa Sukamaju');
+    }
+
+    public function test_sambutan_tidak_tampil_bila_kutipannya_kosong(): void
+    {
+        $this->seed(PengaturanSeeder::class);
+        Pengaturan::where('kunci', 'sambutan_kepala_desa')->delete();
+
+        $this->getJson('/api/v1/beranda')->assertOk()->assertJsonPath('sambutan', null);
     }
 
     public function test_data_pribadi_aparatur_tidak_ikut_terbawa(): void

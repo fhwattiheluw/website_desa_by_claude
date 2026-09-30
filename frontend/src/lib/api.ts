@@ -44,6 +44,8 @@ api.interceptors.response.use(
 interface GalatApi {
   pesan?: string
   message?: string
+  kode?: string
+  korelasi?: string
   errors?: Record<string, string[]>
 }
 
@@ -73,7 +75,14 @@ export function pesanGalat(galat: unknown): string {
     case 429:
       return 'Terlalu banyak permintaan. Mohon tunggu sejenak lalu coba lagi.'
     case 500:
-      return 'Terjadi gangguan pada server. Tim teknis telah dicatat untuk menindaklanjuti.'
+      /*
+       * Pengenal korelasi disertakan agar keluhan warga dapat ditelusuri:
+       * satu kode ini menuntun petugas ke seluruh baris log permintaan
+       * tersebut (REQ-API-006).
+       */
+      return data?.korelasi
+        ? `Terjadi gangguan pada server. Sebutkan kode ${data.korelasi} saat menghubungi kantor desa.`
+        : 'Terjadi gangguan pada server. Tim teknis telah dicatat untuk menindaklanjuti.'
     default:
       return galat.message === 'Network Error'
         ? 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.'

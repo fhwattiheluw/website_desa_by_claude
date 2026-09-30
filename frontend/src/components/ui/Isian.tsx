@@ -1,4 +1,5 @@
 import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
+import { Camera } from 'lucide-react'
 
 const KELAS_ISIAN =
   'w-full min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 ' +
@@ -157,15 +158,35 @@ export function KotakCentang({
   )
 }
 
+const KELAS_BERKAS =
+  'w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-700 file:mr-3 file:min-h-11 ' +
+  'file:cursor-pointer file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-medium ' +
+  'file:text-slate-700 hover:file:bg-slate-200'
+
+/**
+ * Isian berkas, dengan pilihan memotret langsung bila `kamera` diaktifkan
+ * (REQ-HW-002).
+ *
+ * Atribut `capture` dipasang pada isian kedua, bukan pada isian utama:
+ * memasangnya di satu-satunya isian akan memaksa kamera terbuka dan menutup
+ * jalan bagi warga yang sudah memotret dokumennya lebih dahulu.
+ */
 export function Berkas({
   label,
   petunjuk,
   galat,
   id,
+  kamera,
   ...sisa
-}: InputHTMLAttributes<HTMLInputElement> & { label: string; petunjuk?: string; galat?: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & {
+  label: string
+  petunjuk?: string
+  galat?: string
+  kamera?: boolean
+}) {
   const otomatis = useId()
   const idIsian = id ?? otomatis
+  const idKamera = `${idIsian}-kamera`
 
   return (
     <Bungkus id={idIsian} label={label} wajib={sisa.required} petunjuk={petunjuk} galat={galat}>
@@ -174,8 +195,20 @@ export function Berkas({
         type="file"
         id={idIsian}
         aria-invalid={galat ? true : undefined}
-        className="w-full rounded-lg border border-slate-300 bg-white text-sm text-slate-700 file:mr-3 file:min-h-11 file:cursor-pointer file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+        className={KELAS_BERKAS}
       />
+
+      {kamera && (
+        <>
+          <input {...sisa} type="file" id={idKamera} accept="image/*" capture="environment" className="sr-only" />
+          <label
+            htmlFor={idKamera}
+            className="mt-2 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            <Camera aria-hidden className="size-4" /> Ambil Foto dengan Kamera
+          </label>
+        </>
+      )}
     </Bungkus>
   )
 }

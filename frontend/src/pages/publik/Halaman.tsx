@@ -8,6 +8,7 @@ import { judulKan, tanggal } from '@/lib/format'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
 import { GalatMuat, KondisiKosong, Pemuat } from '@/components/ui/Status'
 import { TautanTombol } from '@/components/ui/Tombol'
+import { Sorot } from '@/components/ui/Sorot'
 
 export function Galeri() {
   const { data, isPending, error } = useQuery({
@@ -97,10 +98,12 @@ export function Pencarian() {
                     </span>
                     <h2 className="mt-1 text-base">
                       <Link to={hasil.tautan} className="hover:text-desa-700">
-                        {hasil.judul}
+                        <Sorot teks={hasil.judul} kunci={q} />
                       </Link>
                     </h2>
-                    <p className="mt-1 text-sm text-slate-600">{hasil.cuplikan}</p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      <Sorot teks={hasil.cuplikan} kunci={q} />
+                    </p>
                     {hasil.tanggal && <p className="mt-2 text-xs text-slate-500">{tanggal(hasil.tanggal)}</p>}
                   </IsiKartu>
                 </Kartu>

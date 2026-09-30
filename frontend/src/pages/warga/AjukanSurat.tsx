@@ -40,6 +40,24 @@ export function AjukanSurat() {
 
   const [nilai, setNilai] = useState<Record<string, string | boolean>>({})
   const [berkas, setBerkas] = useState<File[]>([])
+
+  /*
+   * Berkas ditambahkan, bukan menggantikan pilihan sebelumnya: warga dapat
+   * memilih sebagian dari galeri lalu memotret sisanya (REQ-HW-002). Duplikat
+   * disaring berdasarkan nama dan ukuran agar berkas yang sama tidak terunggah
+   * dua kali.
+   */
+  const tambahBerkas = (tambahan: File[]) =>
+    setBerkas((sebelumnya) => {
+      const gabungan = [...sebelumnya]
+
+      for (const satu of tambahan) {
+        const sudahAda = gabungan.some((ada) => ada.name === satu.name && ada.size === satu.size)
+        if (!sudahAda) gabungan.push(satu)
+      }
+
+      return gabungan.slice(0, 5)
+    })
   const [galat, setGalat] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
   const [mengirim, setMengirim] = useState(false)
@@ -263,16 +281,26 @@ export function AjukanSurat() {
             <Berkas
               label="Unggah berkas persyaratan"
               multiple
+              kamera
               accept="image/jpeg,image/png,application/pdf"
               petunjuk="Maksimal 5 berkas, masing-masing 5 MB. Format JPG, PNG, atau PDF."
               galat={galat['lampiran']}
-              onChange={(e) => setBerkas(Array.from(e.target.files ?? []).slice(0, 5))}
+              onChange={(e) => tambahBerkas(Array.from(e.target.files ?? []))}
             />
 
             {berkas.length > 0 && (
               <ul className="space-y-1 text-sm text-slate-600">
                 {berkas.map((b) => (
-                  <li key={b.name}>• {b.name}</li>
+                  <li key={`${b.name}-${b.size}`} className="flex items-center justify-between gap-3">
+                    <span className="min-w-0 truncate">• {b.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setBerkas((sebelumnya) => sebelumnya.filter((satu) => satu !== b))}
+                      className="shrink-0 text-xs font-medium text-red-700 underline underline-offset-2"
+                    >
+                      Hapus
+                    </button>
+                  </li>
                 ))}
               </ul>
             )}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\AksesDitolak;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class PastikanIzin
         }
 
         if ($pengguna->status_akun === User::NONAKTIF) {
-            return response()->json(['pesan' => 'Akun Anda dinonaktifkan. Hubungi administrator desa.'], 403);
+            throw new AksesDitolak('Akun Anda dinonaktifkan. Hubungi administrator desa.');
         }
 
         $pengguna->loadMissing('role.permissions');
@@ -33,9 +34,6 @@ class PastikanIzin
             }
         }
 
-        return response()->json([
-            'pesan' => 'Anda tidak memiliki hak akses untuk tindakan ini.',
-            'izin_dibutuhkan' => $izin,
-        ], 403);
+        throw new AksesDitolak('Anda tidak memiliki hak akses untuk tindakan ini.', $izin);
     }
 }

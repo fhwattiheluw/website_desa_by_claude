@@ -37,6 +37,10 @@ class PengaturanSeeder extends Seeder
                     ."Membangun infrastruktur desa yang merata dan berkelanjutan\n"
                     ."Meningkatkan partisipasi masyarakat dalam pembangunan desa\n"
                     .'Mewujudkan pengelolaan keuangan desa yang akuntabel dan transparan',
+                'sambutan_kepala_desa' => 'Selamat datang di portal resmi Desa Sukamaju. Melalui laman ini, '
+                    .'warga dapat mengurus surat tanpa harus datang ke kantor, membaca penggunaan anggaran desa '
+                    .'secara terbuka, dan menyampaikan aspirasi kapan saja. Sampaikan bila ada pelayanan yang '
+                    .'belum memuaskan; keterbukaan hanya berguna bila diikuti perbaikan.',
                 'luas_wilayah' => '1.245 hektar',
                 'batas_utara' => 'Desa Cimanggu',
                 'batas_selatan' => 'Desa Karangtengah',

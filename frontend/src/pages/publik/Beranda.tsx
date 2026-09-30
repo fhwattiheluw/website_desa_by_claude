@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDays, FileText, Megaphone, Users } from 'lucide-react'
+import { ArrowRight, CalendarDays, FileText, Megaphone, UserRound, Users } from 'lucide-react'
 import { useBeranda } from '@/lib/kueri'
 import { angka, tanggal, tanggalRelatif } from '@/lib/format'
 import { pesanGalat } from '@/lib/api'
@@ -19,6 +19,7 @@ interface DataBeranda {
   pengumuman: Konten[]
   agenda: Konten[]
   statistik: { periode: string; total_penduduk: number } | null
+  sambutan: { nama: string | null; jabatan: string; foto: string | null; kutipan: string } | null
 }
 
 const TAUTAN_CEPAT = [
@@ -102,6 +103,35 @@ export function Beranda() {
           ))}
         </div>
       </section>
+
+      {data?.sambutan && (
+        <section aria-labelledby="sambutan-kepala-desa">
+          <h2 id="sambutan-kepala-desa" className="mb-4 text-xl">
+            Sambutan {data.sambutan.jabatan}
+          </h2>
+          <figure className="flex flex-col gap-5 rounded-xl border border-slate-200 bg-white p-6 sm:flex-row sm:items-start">
+            {data.sambutan.foto ? (
+              <img
+                src={data.sambutan.foto}
+                alt={`Foto ${data.sambutan.nama ?? data.sambutan.jabatan}`}
+                loading="lazy"
+                className="size-24 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <span className="flex size-24 shrink-0 items-center justify-center rounded-full bg-desa-50" aria-hidden>
+                <UserRound className="size-10 text-desa-700" />
+              </span>
+            )}
+            <div>
+              <blockquote className="leading-relaxed text-slate-700">{data.sambutan.kutipan}</blockquote>
+              <figcaption className="mt-3 text-sm">
+                <span className="font-medium text-slate-900">{data.sambutan.nama ?? '-'}</span>
+                <span className="block text-desa-700">{data.sambutan.jabatan}</span>
+              </figcaption>
+            </div>
+          </figure>
+        </section>
+      )}
 
       {data?.statistik && (
         <section aria-labelledby="ringkasan-desa" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

@@ -6,6 +6,7 @@ import { useCatatKunjungan } from '@/lib/analitik'
 import { useAuth } from '@/lib/auth'
 import { Tombol } from '@/components/ui/Tombol'
 import { PengaturanTampilan } from '@/components/ui/PengaturanTampilan'
+import { RemahRoti } from '@/components/layout/RemahRoti'
 
 /** Navigasi utama maksimal tujuh butir tingkat pertama (REQ-UI-003). */
 const TAHUN_BERJALAN = new Date().getFullYear()
@@ -129,6 +130,8 @@ export function TataLetakPublik() {
       </header>
 
       <main id="konten-utama" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+        {/* REQ-UI-004: remah roti pada setiap halaman selain beranda. */}
+        <RemahRoti />
         <Outlet />
       </main>
 

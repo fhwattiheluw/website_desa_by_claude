@@ -65,7 +65,12 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-PRF-003 ukuran transfer | Pemuatan malas rute berat, berkas awal 111 kB gzip | Keluaran `npm run build` |
 | REQ-F-BRD-003 bagan struktur organisasi | Kolom `pengurus.atasan_id` membentuk pohon; ditampilkan sebagai daftar bersarang dengan garis penghubung CSS | `Api/Publik/LembagaController::bagan`, `components/ui/BaganOrganisasi.tsx`, `BaganOrganisasiTest` |
 | REQ-F-BRD-004, REQ-SW-003 peta wilayah | Peta tersemat berpenanda kantor desa dan fasilitas umum, pustaka petanya diimpor hanya saat peta terlihat | `Api/Publik/ProfilController`, `components/ui/Peta.tsx`, `BaganOrganisasiTest::test_fasilitas_umum_...` |
-| REQ-NF-MNT-001 cakupan uji | 138 uji, 631 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-NF-MNT-001 cakupan uji | 147 uji, 665 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-API-006, REQ-NF-MNT-007 kode galat dan korelasi | Setiap respons galat memuat kode stabil, pesan ringkas, dan pengenal korelasi yang sama dengan tajuk `X-Request-Id` dan baris log | `Http/Middleware/PengenalKorelasi`, `Exceptions/KodeGalat`, kanal log `terstruktur`, `GalatApiTest` (7 uji) |
+| REQ-UI-004 remah roti | Disusun dari alamat halaman sehingga tidak perlu didaftarkan ulang tiap kali rute bertambah | `components/layout/RemahRoti.tsx` |
+| REQ-F-SRC-002 penyorotan kata kunci | Ditandai dengan elemen `<mark>`, bukan sekadar warna | `components/ui/Sorot.tsx` |
+| REQ-HW-002 pengambilan lewat kamera | Isian kedua ber-`capture`, sehingga memilih dari galeri tetap mungkin | `components/ui/Isian.tsx`, `pages/warga/AjukanSurat.tsx` |
+| REQ-F-BRD-007 sambutan kepala desa | Penyambut diambil dari puncak bagan pemerintah desa, bukan pencocokan teks jabatan | `Api/Publik/BerandaController::sambutan`, `BaganOrganisasiTest` |
 | REQ-F-SRC-004, REQ-F-SRC-005 metadata halaman | Kerangka aplikasi disajikan Laravel dengan judul, deskripsi, kanonik, Open Graph, dan data terstruktur terisi; sisi klien memperbaruinya saat berpindah halaman | `Services/MetadataHalaman`, `Http/Controllers/KerangkaAplikasiController`, `lib/meta.ts`, `MetadataHalamanTest` (9 uji) |
 | REQ-NF-MNT-004 migrasi bernomor | 21 migrasi idempoten | `php artisan migrate:fresh --seed` |
 | REQ-NF-CMP-003, REQ-F-USR-013 hak subjek data | Akses, koreksi, unduhan salinan, dan pengajuan penghapusan oleh pemilik akun | `AuthController::perbaruiProfil`, `Services/DataPribadiService`, `HakSubjekDataTest` (10 uji) |
@@ -84,9 +89,9 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 167 | M 125 · S 38 · C 4 |
-| Terimplementasi sebagian | 6 | M 2 · S 4 |
-| Belum diimplementasikan | 20 | S 12 · C 8 |
+| Terimplementasi | 173 | M 125 · S 44 · C 4 |
+| Terimplementasi sebagian | 4 | M 2 · S 2 |
+| Belum diimplementasikan | 16 | S 8 · C 8 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
 
@@ -101,9 +106,7 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 | Kebutuhan | Prioritas | Keadaan saat ini |
 |---|:---:|---|
 | REQ-F-ADM-010 | S | Halaman populer dan jumlah pembukaan laman sudah ada; jumlah pengunjung unik sengaja tidak dihitung karena memerlukan pengenalan pengunjung berulang, yang bertentangan dengan REQ-SW-006. |
-| REQ-F-SRC-002 | S | Jenis, cuplikan, dan tanggal sudah ada; penyorotan kata kunci belum. |
 | REQ-F-SRT-017 | M | Jalur spesimen berjalan; penyedia tersertifikasi siap tetapi menunggu sertifikat (OI-02). |
-| REQ-HW-002 | S | Unggah gambar berfungsi; atribut pemicu kamera belum dipasang. |
 | REQ-NF-SEC-008 | S | Validasi tipe asli dan penolakan berkas berisi skrip sudah ada; pemindai antivirus belum. |
 | REQ-SW-004 | M | Integrasi penyedia TTE lengkap dan teruji, menunggu kredensial sungguhan. |
 
@@ -112,9 +115,7 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 | Kebutuhan | Prioritas | Keterangan |
 |---|:---:|---|
 | REQ-API-004 | S | Dokumentasi OpenAPI belum ada. |
-| REQ-API-006 | S | Pengenal korelasi pada respons galat belum ada. |
 | REQ-F-ADM-003 | S | Pengelola menu navigasi belum ada; menu masih ditetapkan di kode. |
-| REQ-F-BRD-007 | S | Sambutan Kepala Desa belum ada. |
 | REQ-F-BRD-008 | C | Penunjuk arah/rute ke kantor desa belum ada. |
 | REQ-F-GAL-006 | S | Penyematan video dari penyedia eksternal belum ada. |
 | REQ-F-KNT-009 | C | Penghitung dibaca sudah ada, daftar "Terpopuler" belum. |
@@ -128,8 +129,6 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 | REQ-F-STA-004 | C | Pembanding antarperiode belum ada. |
 | REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
 | REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
-| REQ-NF-MNT-007 | S | Log terstruktur dengan pengenal korelasi belum ada. |
-| REQ-UI-004 | S | Remah roti belum ada. |
 | REQ-UI-007 | S | Formulir panjang belum dibagi bertahap. |
 
 ### 4.3 Perlu pengukuran, pengujian, atau penyiapan server
@@ -141,7 +140,7 @@ dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
 `REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
 
 Yang sudah terukur sejauh ini: ukuran berkas awal 111 kB terkompresi
-(REQ-NF-PRF-003) dan cakupan uji otomatis 138 uji dengan 631 asersi pada logika
+(REQ-NF-PRF-003) dan cakupan uji otomatis 147 uji dengan 665 asersi pada logika
 bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
 uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
 
