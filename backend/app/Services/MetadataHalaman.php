@@ -39,6 +39,7 @@ class MetadataHalaman
         '/transparansi/produk-hukum' => ['Produk Hukum Desa', 'Peraturan desa, peraturan kepala desa, dan keputusan yang berlaku.'],
         '/ppid' => ['PPID Desa', 'Daftar informasi publik yang wajib disediakan dan diumumkan pemerintah desa.'],
         '/ppid/permohonan' => ['Permohonan Informasi Publik', 'Ajukan permohonan informasi kepada PPID Desa secara daring.'],
+        '/ppid/lacak' => ['Lacak Permohonan Informasi Publik', 'Periksa status permohonan informasi publik dan ajukan keberatan bila permohonan ditolak.'],
         '/pengaduan' => ['Pengaduan dan Aspirasi Masyarakat', 'Sampaikan laporan, keluhan, atau usulan kepada pemerintah desa dan pantau tindak lanjutnya.'],
         '/pengaduan/lacak' => ['Lacak Pengaduan', 'Pantau status tindak lanjut pengaduan dengan kode lacak.'],
         '/potensi/umkm' => ['Direktori UMKM Desa', 'Produk dan jasa pelaku usaha mikro, kecil, dan menengah di desa.'],

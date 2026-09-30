@@ -30,6 +30,7 @@ class PetaSitusController extends Controller
         ['/transparansi/statistik', 'monthly', '0.7'],
         ['/transparansi/produk-hukum', 'monthly', '0.7'],
         ['/ppid', 'monthly', '0.7'],
+        ['/ppid/lacak', 'yearly', '0.4'],
         ['/pengaduan', 'monthly', '0.8'],
         ['/potensi/umkm', 'weekly', '0.7'],
         ['/potensi/wisata', 'monthly', '0.6'],

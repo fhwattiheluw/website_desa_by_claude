@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  BarChart3, Building2, Eye, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquareWarning,
+  BarChart3, Building2, Eye, FileText, Files, Gauge, Inbox, LogOut, Menu, MessageSquare, MessageSquareWarning,
   PenLine, Settings, ShieldCheck, UserX, Users, X,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
@@ -20,6 +20,7 @@ const MENU: ButirMenu[] = [
   { ke: '/admin/permohonan', teks: 'Antrean Permohonan', ikon: Inbox, izin: ['permohonan.lihat'] },
   { ke: '/admin/pengaduan', teks: 'Pengaduan', ikon: MessageSquareWarning, izin: ['pengaduan.lihat'] },
   { ke: '/admin/konten', teks: 'Konten', ikon: FileText, izin: ['konten.kelola'] },
+  { ke: '/admin/moderasi', teks: 'Moderasi', ikon: MessageSquare, izin: ['konten.kelola'] },
   { ke: '/admin/apbdes', teks: 'APBDes', ikon: BarChart3, izin: ['apbdes.kelola'] },
   { ke: '/admin/bumdes', teks: 'BUMDes', ikon: Building2, izin: ['bumdes.kelola'] },
   { ke: '/admin/pengguna', teks: 'Pengguna', ikon: Users, izin: ['pengguna.lihat'] },

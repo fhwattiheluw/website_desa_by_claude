@@ -51,6 +51,10 @@ Route::prefix('v1')->group(function () {
 
         Route::get('produk-hukum', [Publik\PustakaController::class, 'produkHukum']);
         Route::get('informasi-publik', [Publik\PustakaController::class, 'informasiPublik']);
+        // REQ-F-PID-007: pelacakan permohonan informasi dan keberatannya.
+        Route::get('permohonan-informasi/lacak/{kode}', [Publik\KeberatanController::class, 'lacak']);
+        // REQ-F-KNT-013: komentar yang sudah lolos moderasi.
+        Route::get('konten/{tipe}/{slug}/komentar', [Publik\KomentarController::class, 'index']);
 
         Route::get('umkm', [Publik\PotensiController::class, 'umkm']);
         Route::get('wisata', [Publik\PotensiController::class, 'wisata']);
@@ -67,6 +71,8 @@ Route::prefix('v1')->group(function () {
         Route::post('pengaduan', [Publik\PengaduanController::class, 'store']);
         Route::post('permohonan-informasi', [Publik\PustakaController::class, 'ajukanInformasi']);
         Route::post('umkm/daftar', [Publik\PotensiController::class, 'daftarUmkm']);
+        Route::post('konten/{tipe}/{slug}/komentar', [Publik\KomentarController::class, 'store']);
+        Route::post('permohonan-informasi/lacak/{kode}/keberatan', [Publik\KeberatanController::class, 'ajukan']);
     });
 
     /*
@@ -212,6 +218,14 @@ Route::prefix('v1')->group(function () {
             Route::post('{user}/status', [Admin\PenggunaController::class, 'ubahStatus'])->middleware('izin:pengguna.kelola');
             Route::post('{user}/atur-ulang-kata-sandi', [Admin\PenggunaController::class, 'aturUlangKataSandi'])->middleware('izin:pengguna.kelola');
         });
+
+        // Moderasi komentar (REQ-F-KNT-013) dan keberatan informasi (REQ-F-PID-007)
+        Route::get('komentar', [Admin\KomentarController::class, 'index'])->middleware('izin:konten.kelola');
+        Route::post('komentar/{komentar}/moderasi', [Admin\KomentarController::class, 'moderasi'])
+            ->middleware('izin:konten.kelola');
+        Route::get('keberatan-informasi', [Admin\KeberatanController::class, 'index'])->middleware('izin:konten.terbit');
+        Route::post('keberatan-informasi/{keberatan}/tanggapi', [Admin\KeberatanController::class, 'tanggapi'])
+            ->middleware('izin:konten.terbit');
 
         // Referensi: produk hukum & UMKM
         Route::post('produk-hukum', [Admin\ReferensiController::class, 'simpanProdukHukum'])->middleware('izin:konten.kelola');

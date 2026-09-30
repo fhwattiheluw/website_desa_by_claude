@@ -71,7 +71,7 @@ Seluruh akun hasil seeder memakai kata sandi `sidesa2026`.
 ## Pengujian
 
 ```bash
-cd backend && ./vendor/bin/phpunit      # 156 uji, 693 asersi
+cd backend && ./vendor/bin/phpunit      # 166 uji, 731 asersi
 cd backend && ./vendor/bin/pint --test  # gaya kode
 cd frontend && npm run build            # typecheck + bundel produksi
 cd frontend && npm run lint
@@ -285,9 +285,10 @@ tingkat keparahan dan pengenal korelasi.
 | — | Penelusuran galat dan penyempurnaan antarmuka | Terimplementasi: kode galat beserta pengenal korelasi, log terstruktur, remah roti, penyorotan kata kunci, pengambilan lampiran lewat kamera, dan sambutan kepala desa |
 | — | Notifikasi dan kalender | Terimplementasi: lonceng pekerjaan baru bagi petugas, preferensi kanal notifikasi bagi warga, dan kalender agenda bulanan |
 | — | Formulir permohonan bertahap | Terimplementasi: pengisian dipecah menjadi langkah dengan indikator kemajuan, validasi per langkah, dan langkah tinjau sebelum kirim |
+| — | Partisipasi dan penyajian | Terimplementasi: komentar bermoderasi, keberatan informasi publik, terpopuler, produk unggulan bergilir, pembanding antarperiode, dan penunjuk arah |
 
-Dari 218 kebutuhan pada SRS: 177 terimplementasi, 4 terimplementasi sebagian,
-12 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
+Dari 218 kebutuhan pada SRS: 183 terimplementasi, 4 terimplementasi sebagian,
+6 belum dikerjakan, 22 menunggu pengukuran atau penyiapan server, dan 3 tidak
 berlaku pada arsitektur yang dipilih. **Seluruh kebutuhan Must yang dapat
 dikerjakan sudah dikerjakan**; dua butir Must yang tersisa — REQ-F-SRT-017 dan
 REQ-SW-004 — tertahan pada terbitnya sertifikat elektronik (OI-02), bukan pada

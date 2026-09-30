@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { api, galatKolom, pesanGalat } from '@/lib/api'
 import { tanggal } from '@/lib/format'
 import { Kartu, IsiKartu, KepalaKartu } from '@/components/ui/Kartu'
@@ -12,7 +13,12 @@ import { useAuth } from '@/lib/auth'
 /** REQ-F-PID-003: permohonan informasi publik secara daring. */
 export function PermohonanInformasi() {
   const { pengguna } = useAuth()
-  const [hasil, setHasil] = useState<{ pesan: string; nomor_tiket: string; tenggat_jawaban: string } | null>(null)
+  const [hasil, setHasil] = useState<{
+    pesan: string
+    nomor_tiket: string
+    kode_lacak: string
+    tenggat_jawaban: string
+  } | null>(null)
   const [galat, setGalat] = useState<Record<string, string>>({})
   const [pesan, setPesan] = useState('')
   const [mengirim, setMengirim] = useState(false)
@@ -47,8 +53,19 @@ export function PermohonanInformasi() {
           <IsiKartu>
             <p className="text-sm text-slate-600">Nomor tiket</p>
             <p className="text-lg font-semibold">{hasil.nomor_tiket}</p>
+            <p className="mt-3 text-sm text-slate-600">Kode lacak</p>
+            <p className="text-lg font-semibold tracking-wider">{hasil.kode_lacak}</p>
+            <p className="mt-1 text-sm text-slate-600">
+              Simpan kode ini untuk memeriksa status permohonan dan mengajukan keberatan bila diperlukan.
+            </p>
             <p className="mt-3 text-sm text-slate-600">Tenggat jawaban</p>
             <p className="font-medium">{tanggal(hasil.tenggat_jawaban)}</p>
+            <Link
+              to={`/ppid/lacak?kode=${hasil.kode_lacak}`}
+              className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-desa-700 px-4 text-sm font-medium text-white hover:bg-desa-800"
+            >
+              Lacak Permohonan
+            </Link>
           </IsiKartu>
         </Kartu>
       </div>

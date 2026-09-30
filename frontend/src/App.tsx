@@ -39,6 +39,9 @@ const Ppid = lazy(() => import('@/pages/publik/Pustaka').then((m) => ({ default:
 const PermohonanInformasi = lazy(() =>
   import('@/pages/publik/PermohonanInformasi').then((m) => ({ default: m.PermohonanInformasi })),
 )
+const LacakInformasi = lazy(() =>
+  import('@/pages/publik/LacakInformasi').then((m) => ({ default: m.LacakInformasi })),
+)
 const DirektoriUmkm = lazy(() => import('@/pages/publik/Potensi').then((m) => ({ default: m.DirektoriUmkm })))
 const DaftarUmkm = lazy(() => import('@/pages/publik/DaftarUmkm').then((m) => ({ default: m.DaftarUmkm })))
 const Bumdes = lazy(() => import('@/pages/publik/Bumdes').then((m) => ({ default: m.Bumdes })))
@@ -70,6 +73,7 @@ const PermintaanData = lazy(() =>
   import('@/pages/admin/PermintaanData').then((m) => ({ default: m.PermintaanData })),
 )
 const Analitik = lazy(() => import('@/pages/admin/Analitik').then((m) => ({ default: m.Analitik })))
+const Moderasi = lazy(() => import('@/pages/admin/Moderasi').then((m) => ({ default: m.Moderasi })))
 
 const klienKueri = new QueryClient({
   defaultOptions: {
@@ -109,6 +113,7 @@ export default function App() {
                 <Route path="transparansi/produk-hukum" element={<ProdukHukum />} />
                 <Route path="ppid" element={<Ppid />} />
                 <Route path="ppid/permohonan" element={<PermohonanInformasi />} />
+                <Route path="ppid/lacak" element={<LacakInformasi />} />
 
                 <Route path="layanan" element={<Layanan />} />
                 <Route path="layanan/verifikasi" element={<VerifikasiSurat />} />
@@ -178,6 +183,7 @@ export default function App() {
                 <Route path="pengguna" element={<KelolaPengguna />} />
                 <Route path="laporan" element={<Laporan />} />
                 <Route path="analitik" element={<Analitik />} />
+                <Route path="moderasi" element={<Moderasi />} />
                 <Route path="audit-log" element={<AuditLog />} />
                 <Route path="permintaan-data" element={<PermintaanData />} />
                 <Route path="bumdes" element={<KelolaBumdes />} />

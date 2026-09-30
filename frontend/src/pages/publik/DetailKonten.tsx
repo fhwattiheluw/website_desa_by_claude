@@ -7,6 +7,7 @@ import { useDataTerstruktur, useMeta } from '@/lib/meta'
 import { GalatMuat, Pemuat } from '@/components/ui/Status'
 import { Lencana } from '@/components/ui/Lencana'
 import type { TipeKonten } from '@/types'
+import { Komentar } from '@/components/ui/Komentar'
 
 export function DetailKonten({ tipe }: { tipe: TipeKonten }) {
   const { slug = '' } = useParams()
@@ -135,6 +136,9 @@ export function DetailKonten({ tipe }: { tipe: TipeKonten }) {
           Salin tautan
         </button>
       </footer>
+
+      {/* REQ-F-KNT-013: berita dan artikel mengundang tanggapan pembaca. */}
+      {(tipe === 'berita' || tipe === 'artikel') && <Komentar tipe={tipe} slug={slug} />}
     </article>
   )
 }

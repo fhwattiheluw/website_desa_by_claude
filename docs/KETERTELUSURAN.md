@@ -65,7 +65,13 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-PRF-003 ukuran transfer | Pemuatan malas rute berat, berkas awal 115 kB gzip | Keluaran `npm run build` |
 | REQ-F-BRD-003 bagan struktur organisasi | Kolom `pengurus.atasan_id` membentuk pohon; ditampilkan sebagai daftar bersarang dengan garis penghubung CSS | `Api/Publik/LembagaController::bagan`, `components/ui/BaganOrganisasi.tsx`, `BaganOrganisasiTest` |
 | REQ-F-BRD-004, REQ-SW-003 peta wilayah | Peta tersemat berpenanda kantor desa dan fasilitas umum, pustaka petanya diimpor hanya saat peta terlihat | `Api/Publik/ProfilController`, `components/ui/Peta.tsx`, `BaganOrganisasiTest::test_fasilitas_umum_...` |
-| REQ-NF-MNT-001 cakupan uji | 156 uji, 693 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-NF-MNT-001 cakupan uji | 166 uji, 731 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-F-KNT-009 terpopuler | Dibatasi 90 hari terakhir agar satu tulisan lama tidak menempatinya selamanya | `Api/Publik/BerandaController` |
+| REQ-F-KNT-013 komentar bermoderasi | Seluruh komentar menunggu tinjauan petugas; tidak ada jalur yang membuat tulisan orang lain langsung tayang | `Api/Publik/KomentarController`, `Api/Admin/KomentarController`, `components/ui/Komentar.tsx`, `PartisipasiTest` |
+| REQ-F-PID-007 keberatan informasi | Kode lacak memberi pemohon jalan memeriksa status dan mengajukan keberatan tanpa berakun; tenggat 30 hari kerja (UU 14/2008 Pasal 36) | `Api/Publik/KeberatanController`, `Api/Admin/KeberatanController`, `pages/publik/LacakInformasi.tsx` |
+| REQ-F-POT-007 produk unggulan | Pergiliran berhenti saat gerakan diminta dikurangi, saat penunjuk di atasnya, atau saat fokus masuk | `components/ui/Bergilir.tsx` |
+| REQ-F-STA-004 pembanding periode | Kelompok yang disamarkan tidak ikut dibandingkan; selisihnya dapat membocorkan angka yang disembunyikan | `Api/Publik/StatistikController::pembanding` |
+| REQ-F-BRD-008 penunjuk arah | Diserahkan ke layanan peta di perangkat warga; rute menuntut data jalan mutakhir | `components/ui/Peta.tsx` |
 | REQ-F-KNT-012 kalender agenda | Kalender bulanan berupa tabel — bukan kisi div — agar pembaca layar mengumumkan tanggal beserta harinya; tersedia bersama tampilan daftar | `components/ui/KalenderAgenda.tsx`, `Api/Publik/KontenController::kalender` |
 | REQ-API-006, REQ-NF-MNT-007 kode galat dan korelasi | Setiap respons galat memuat kode stabil, pesan ringkas, dan pengenal korelasi yang sama dengan tajuk `X-Request-Id` dan baris log | `Http/Middleware/PengenalKorelasi`, `Exceptions/KodeGalat`, kanal log `terstruktur`, `GalatApiTest` (7 uji) |
 | REQ-UI-004 remah roti | Disusun dari alamat halaman sehingga tidak perlu didaftarkan ulang tiap kali rute bertambah | `components/layout/RemahRoti.tsx` |
@@ -91,9 +97,9 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 177 | M 125 · S 48 · C 4 |
+| Terimplementasi | 183 | M 125 · S 48 · C 10 |
 | Terimplementasi sebagian | 4 | M 2 · S 2 |
-| Belum diimplementasikan | 12 | S 4 · C 8 |
+| Belum diimplementasikan | 6 | S 4 · C 2 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
 
@@ -118,14 +124,8 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 |---|:---:|---|
 | REQ-API-004 | S | Dokumentasi OpenAPI belum ada. |
 | REQ-F-ADM-003 | S | Pengelola menu navigasi belum ada; menu masih ditetapkan di kode. |
-| REQ-F-BRD-008 | C | Penunjuk arah/rute ke kantor desa belum ada. |
 | REQ-F-GAL-006 | S | Penyematan video dari penyedia eksternal belum ada. |
-| REQ-F-KNT-009 | C | Penghitung dibaca sudah ada, daftar "Terpopuler" belum. |
-| REQ-F-KNT-013 | C | Komentar artikel belum ada. |
-| REQ-F-PID-007 | C | Pengajuan keberatan atas penolakan informasi belum ada. |
-| REQ-F-POT-007 | C | Produk unggulan bergilir di beranda belum ada. |
 | REQ-F-SRT-023 | C | Pencetakan dan pengunduhan massal belum ada. |
-| REQ-F-STA-004 | C | Pembanding antarperiode belum ada. |
 | REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
 | REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
 
@@ -138,7 +138,7 @@ dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
 `REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
 
 Yang sudah terukur sejauh ini: ukuran berkas awal 115 kB terkompresi
-(REQ-NF-PRF-003) dan cakupan uji otomatis 156 uji dengan 693 asersi pada logika
+(REQ-NF-PRF-003) dan cakupan uji otomatis 166 uji dengan 731 asersi pada logika
 bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
 uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
 

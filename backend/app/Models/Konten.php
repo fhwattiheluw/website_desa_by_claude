@@ -59,6 +59,12 @@ class Konten extends Model
     }
 
     /** Hanya konten yang benar-benar tayang bagi publik (REQ-F-KNT-003, 004, BR-09). */
+    /** REQ-F-KNT-013: komentar pembaca, tayang hanya setelah dimoderasi. */
+    public function komentar(): HasMany
+    {
+        return $this->hasMany(Komentar::class);
+    }
+
     public function scopeTayang(Builder $query): Builder
     {
         return $query->where('status', 'terbit')

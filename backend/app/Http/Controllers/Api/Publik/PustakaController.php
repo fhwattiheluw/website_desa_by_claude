@@ -81,6 +81,9 @@ class PustakaController extends Controller
         $permohonan = PermohonanInformasi::create([
             ...$data,
             'nomor_tiket' => $nomor->nomorPermohonanInformasi(),
+            // REQ-F-PID-007: pemohon memerlukan kode untuk memeriksa status dan
+            // mengajukan keberatan tanpa harus berakun.
+            'kode_lacak' => strtoupper(str()->random(8)),
             'pemohon_id' => $request->user()?->id,
             'tenggat_jawaban' => $kalender->tenggat(self::SLA_JAWABAN_HARI_KERJA),
         ]);
@@ -91,6 +94,7 @@ class PustakaController extends Controller
             'pesan' => 'Permohonan informasi diterima dan akan dijawab paling lambat '
                 .self::SLA_JAWABAN_HARI_KERJA.' hari kerja.',
             'nomor_tiket' => $permohonan->nomor_tiket,
+            'kode_lacak' => $permohonan->kode_lacak,
             'tenggat_jawaban' => $permohonan->tenggat_jawaban?->toIso8601String(),
         ], 201);
     }
