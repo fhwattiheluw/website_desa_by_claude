@@ -99,7 +99,29 @@ export function pesanGalat(galat: unknown): string {
 export async function unduhBerkas(jalur: string, namaBerkas: string): Promise<void> {
   const { data } = await api.get<Blob>(jalur, { responseType: 'blob' })
 
-  const alamat = URL.createObjectURL(data)
+  serahkanKePeramban(data, namaBerkas)
+}
+
+/**
+ * Mengunduh berkas dari titik akhir yang memerlukan muatan, misalnya daftar
+ * permohonan yang hendak diarsipkan (REQ-F-SRT-023).
+ */
+export async function unduhDenganMuatan(
+  jalur: string,
+  muatan: unknown,
+  namaBerkas: string,
+): Promise<void> {
+  try {
+    const { data } = await api.post<Blob>(jalur, muatan, { responseType: 'blob' })
+
+    serahkanKePeramban(data, namaBerkas)
+  } catch (galat) {
+    throw await galatDariBlob(galat)
+  }
+}
+
+function serahkanKePeramban(isi: Blob, namaBerkas: string): void {
+  const alamat = URL.createObjectURL(isi)
   const tautan = document.createElement('a')
 
   tautan.href = alamat
@@ -109,6 +131,25 @@ export async function unduhBerkas(jalur: string, namaBerkas: string): Promise<vo
   tautan.remove()
 
   URL.revokeObjectURL(alamat)
+}
+
+/**
+ * Memulihkan badan galat yang terlanjur diterima sebagai Blob.
+ *
+ * Permintaan unduhan meminta respons berbentuk Blob, sehingga badan galat dari
+ * server pun sampai sebagai Blob — `pesanGalat` hanya akan melihat objek kosong
+ * dan menampilkan pesan umum, padahal server sudah menerangkan sebabnya.
+ */
+async function galatDariBlob(galat: unknown): Promise<unknown> {
+  if (!axios.isAxiosError(galat) || !(galat.response?.data instanceof Blob)) return galat
+
+  try {
+    galat.response.data = JSON.parse(await galat.response.data.text())
+  } catch {
+    // Badan bukan JSON: biarkan pesan umum yang berlaku.
+  }
+
+  return galat
 }
 
 /** Mengambil galat validasi per kolom untuk ditampilkan di bawah masing-masing isian. */

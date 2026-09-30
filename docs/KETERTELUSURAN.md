@@ -10,15 +10,15 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 |---|---|---|---|---|
 | MOD-BRD Beranda & Profil | REQ-F-BRD-001..008 | `Api/Publik/BerandaController`, `ProfilController`, `LembagaController`, model `Pengaturan`, `FasilitasUmum` | `pages/publik/Beranda.tsx`, `Profil.tsx`, `components/ui/BaganOrganisasi.tsx`, `components/ui/Peta.tsx` | `PortalPublikTest::test_beranda_menyajikan_profil_dan_sorotan`, `BaganOrganisasiTest` (5 uji) |
 | MOD-KNT Konten | REQ-F-KNT-001..014 | `Api/Admin/KontenController`, `Api/Publik/KontenController`, model `Konten`, `KontenVersi` | `pages/admin/KelolaKonten.tsx`, `pages/publik/DaftarKonten.tsx`, `DetailKonten.tsx` | `PortalPublikTest` (tayang, kedaluwarsa, penghitung dibaca), `OtorisasiTest` (maker-checker) |
-| MOD-GAL Galeri & Media | REQ-F-GAL-001..008 | `Services/MediaService`, `Api/Admin/MediaController` | `pages/publik/Halaman.tsx` (Galeri) | Uji unggahan pada `PermohonanSuratTest` (lampiran privat) |
+| MOD-GAL Galeri & Media | REQ-F-GAL-001..008 | `Services/MediaService`, `Services/Pemindai/*`, `Api/Admin/MediaController` | `pages/publik/Halaman.tsx` (Galeri) | Uji unggahan pada `PermohonanSuratTest` (lampiran privat) |
 | MOD-APB Transparansi | REQ-F-APB-001..009 | `Api/Publik/ApbdesController`, `Api/Admin/ApbdesController` | `pages/publik/Apbdes.tsx`, `pages/admin/KelolaApbdes.tsx` | `PortalPublikTest::test_apbdes_belum_dipublikasikan_tidak_dapat_diakses` |
 | MOD-STA Statistik | REQ-F-STA-001..006 | `Api/Publik/StatistikController`, `Api/Admin/StatistikController` | `pages/publik/Statistik.tsx` | `PortalPublikTest::test_statistik_menyamarkan_kelompok_sangat_kecil` |
-| MOD-SRT Layanan Surat | REQ-F-SRT-001..027 | `Services/PermohonanService`, `SuratService`, `NomorService`, `KalenderKerja`, `Services/TandaTangan/*`, `Api/Warga/PermohonanController`, `Api/Admin/PermohonanController`, `Api/Admin/TandaTanganController` | `pages/warga/AjukanSurat.tsx`, `DetailPermohonan.tsx`, `pages/admin/AntreanPermohonan.tsx`, `DetailPermohonanAdmin.tsx`, `TandaTangan.tsx` | `PermohonanSuratTest` (13 uji), `Fase4Test` (TTE), `NomorServiceTest`, `KalenderKerjaTest` |
+| MOD-SRT Layanan Surat | REQ-F-SRT-001..027 | `Services/PermohonanService`, `SuratService`, `NomorService`, `KalenderKerja`, `Services/TandaTangan/*`, `Api/Warga/PermohonanController`, `Api/Admin/PermohonanController`, `Api/Admin/TandaTanganController` | `pages/warga/AjukanSurat.tsx`, `DetailPermohonan.tsx`, `pages/admin/AntreanPermohonan.tsx`, `DetailPermohonanAdmin.tsx`, `TandaTangan.tsx` | `PermohonanSuratTest` (16 uji), `Fase4Test` (TTE), `NomorServiceTest`, `KalenderKerjaTest` |
 | MOD-ADU Pengaduan | REQ-F-ADU-001..011 | `Services/PengaduanService`, `Api/Publik/PengaduanController`, `Api/Admin/PengaduanController` | `pages/publik/Pengaduan.tsx`, `LacakPengaduan.tsx`, `pages/admin/KelolaPengaduan.tsx` | `PengaduanTest` (8 uji) |
 | MOD-PID PPID & Produk Hukum | REQ-F-PID-001..007 | `Api/Publik/PustakaController`, `Api/Admin/ReferensiController` | `pages/publik/Pustaka.tsx`, `PermohonanInformasi.tsx` | `PortalPublikTest::test_bentuk_respons_berhalaman_seragam` |
 | MOD-POT Potensi Desa | REQ-F-POT-001..007 | `Api/Publik/PotensiController`, `Api/Publik/BumdesController`, `Api/Admin/ReferensiController`, `Api/Admin/BumdesController` | `pages/publik/Potensi.tsx`, `DaftarUmkm.tsx`, `Bumdes.tsx`, `pages/admin/KelolaBumdes.tsx` | `Fase4Test::test_laman_bumdes_...`, `test_kinerja_bumdes_baru_tampil_...` |
 | MOD-LMB Lembaga | REQ-F-LMB-001..004 | `Api/Publik/LembagaController`, model `Lembaga`, `Pengurus` | `pages/publik/Profil.tsx` | Data pribadi aparatur tidak dipaparkan (lihat resource) |
-| MOD-USR Pengguna & Akses | REQ-F-USR-001..015 | `Api/AuthController`, `Api/KataSandiController`, `Api/VerifikasiSurelController`, `Http/Middleware/PastikanIzin`, `Api/Admin/PenggunaController` | `lib/auth.ts`, `components/layout/PenyediaAuth.tsx`, `pages/auth/*`, `components/layout/Terlindungi.tsx` | `AutentikasiTest` (10 uji), `PemulihanAkunTest` (9 uji), `OtorisasiTest` (8 uji) |
+| MOD-USR Pengguna & Akses | REQ-F-USR-001..015 | `Api/AuthController`, `Services/OtpService`, `Api/KataSandiController`, `Api/VerifikasiSurelController`, `Http/Middleware/PastikanIzin`, `Api/Admin/PenggunaController` | `lib/auth.ts`, `components/layout/PenyediaAuth.tsx`, `pages/auth/*`, `pages/warga/RiwayatMasuk.tsx`, `components/layout/Terlindungi.tsx` | `AutentikasiTest` (12 uji), `DuaFaktorTest` (9 uji), `PemulihanAkunTest` (9 uji), `OtorisasiTest` (8 uji) |
 | MOD-ADM Administrasi | REQ-F-ADM-001..010 | `Api/Admin/DashboardController`, `PengaturanController`, `AuditLogController`, `Services/AuditLogger`, `Console/Commands/Cadangkan` | `pages/admin/Dasbor.tsx`, `Pengaturan.tsx`, `AuditLog.tsx`, `Laporan.tsx` | `OtorisasiTest::test_audit_log_bersifat_hanya_baca`, `OperasionalTest::test_perintah_pencadangan_...`, `test_ekspor_laporan_...` |
 | MOD-NOT Notifikasi | REQ-F-NOT-001..006 | `Services/NotifikasiService`, `NotifikasiPetugasService`, model `NotifikasiLog`, `NotifikasiPetugas`, `Api/Admin/NotifikasiController`, `Api/PreferensiNotifikasiController` | `components/layout/LonceNotifikasi.tsx`, `pages/warga/PreferensiNotifikasi.tsx` | `NotifikasiTest` (9 uji), alur `PermohonanSuratTest` |
 | MOD-SRC Pencarian & SEO | REQ-F-SRC-001..007 | `Api/Publik/PencarianController`, `PetaSitusController` (sitemap, robots, RSS), `KerangkaAplikasiController`, `Services/MetadataHalaman` | `pages/publik/Halaman.tsx` (Pencarian), `TidakDitemukan`, `lib/meta.ts` (metadata dan data terstruktur) | `PortalPublikTest::test_pencarian_global_...`, `OperasionalTest::test_sitemap_...`, `Fase4Test::test_umpan_rss_...` |
@@ -65,7 +65,7 @@ review, audit, dan uji penerimaan (Bab 9 dan 10 SRS).
 | REQ-NF-PRF-003 ukuran transfer | Pemuatan malas rute berat, berkas awal 115 kB gzip | Keluaran `npm run build` |
 | REQ-F-BRD-003 bagan struktur organisasi | Kolom `pengurus.atasan_id` membentuk pohon; ditampilkan sebagai daftar bersarang dengan garis penghubung CSS | `Api/Publik/LembagaController::bagan`, `components/ui/BaganOrganisasi.tsx`, `BaganOrganisasiTest` |
 | REQ-F-BRD-004, REQ-SW-003 peta wilayah | Peta tersemat berpenanda kantor desa dan fasilitas umum, pustaka petanya diimpor hanya saat peta terlihat | `Api/Publik/ProfilController`, `components/ui/Peta.tsx`, `BaganOrganisasiTest::test_fasilitas_umum_...` |
-| REQ-NF-MNT-001 cakupan uji | 166 uji, 731 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
+| REQ-NF-MNT-001 cakupan uji | 180 uji, 804 asersi pada logika inti, dijalankan pada SQLite dan PostgreSQL | `./vendor/bin/phpunit` |
 | REQ-F-KNT-009 terpopuler | Dibatasi 90 hari terakhir agar satu tulisan lama tidak menempatinya selamanya | `Api/Publik/BerandaController` |
 | REQ-F-KNT-013 komentar bermoderasi | Seluruh komentar menunggu tinjauan petugas; tidak ada jalur yang membuat tulisan orang lain langsung tayang | `Api/Publik/KomentarController`, `Api/Admin/KomentarController`, `components/ui/Komentar.tsx`, `PartisipasiTest` |
 | REQ-F-PID-007 keberatan informasi | Kode lacak memberi pemohon jalan memeriksa status dan mengajukan keberatan tanpa berakun; tenggat 30 hari kerja (UU 14/2008 Pasal 36) | `Api/Publik/KeberatanController`, `Api/Admin/KeberatanController`, `pages/publik/LacakInformasi.tsx` |
@@ -97,9 +97,9 @@ menelusuri kode dan bukan sekadar mencocokkan anotasi.
 
 | Status | Jumlah | Rincian prioritas |
 |---|---:|---|
-| Terimplementasi | 183 | M 125 · S 48 · C 10 |
-| Terimplementasi sebagian | 4 | M 2 · S 2 |
-| Belum diimplementasikan | 6 | S 4 · C 2 |
+| Terimplementasi | 187 | M 125 · S 50 · C 12 |
+| Terimplementasi sebagian | 3 | M 2 · S 1 |
+| Belum diimplementasikan | 3 | S 3 |
 | Perlu pengukuran atau penyiapan server | 22 | M 21 · S 1 |
 | Tidak berlaku pada arsitektur ini | 3 | M 2 · W 1 |
 
@@ -115,7 +115,7 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 |---|:---:|---|
 | REQ-F-ADM-010 | S | Halaman populer dan jumlah pembukaan laman sudah ada; jumlah pengunjung unik sengaja tidak dihitung karena memerlukan pengenalan pengunjung berulang, yang bertentangan dengan REQ-SW-006. |
 | REQ-F-SRT-017 | M | Jalur spesimen berjalan; penyedia tersertifikasi siap tetapi menunggu sertifikat (OI-02). |
-| REQ-NF-SEC-008 | S | Validasi tipe asli dan penolakan berkas berisi skrip sudah ada; pemindai antivirus belum. |
+| REQ-NF-SEC-008 | S | Validasi tipe asli, penolakan berkas berisi skrip, dan pemindaian antivirus sudah ada. Pemindai berjalan bila `PEMINDAI_BERKAS=clamav` diarahkan ke daemon ClamAV; tanpa daemon, pemindaian dilewati dan sisa lapisan tetap berlaku. Butir ini menjadi utuh setelah daemon itu terpasang pada server desa. |
 | REQ-SW-004 | M | Integrasi penyedia TTE lengkap dan teruji, menunggu kredensial sungguhan. |
 
 ### 4.2 Belum diimplementasikan
@@ -125,9 +125,6 @@ sungguhan. Sisanya menunggu pengukuran pada lingkungan setara produksi.
 | REQ-API-004 | S | Dokumentasi OpenAPI belum ada. |
 | REQ-F-ADM-003 | S | Pengelola menu navigasi belum ada; menu masih ditetapkan di kode. |
 | REQ-F-GAL-006 | S | Penyematan video dari penyedia eksternal belum ada. |
-| REQ-F-SRT-023 | C | Pencetakan dan pengunduhan massal belum ada. |
-| REQ-F-USR-009 | S | Otentikasi dua faktor belum ada. |
-| REQ-F-USR-015 | C | Riwayat masuk belum ditampilkan pada profil. |
 
 ### 4.3 Perlu pengukuran, pengujian, atau penyiapan server
 
@@ -138,8 +135,8 @@ dipasang, sebagaimana diatur pada Bab 10 dan Lampiran C SRS:
 `REQ-API-001`, `REQ-NF-CMP-006`, `REQ-NF-CMP-007`, `REQ-NF-CMP-008`, `REQ-NF-MNT-005`, `REQ-NF-PRF-001`, `REQ-NF-PRF-002`, `REQ-NF-PRF-004`, `REQ-NF-PRF-005`, `REQ-NF-PRF-006`, `REQ-NF-PRF-007`, `REQ-NF-REL-001`, `REQ-NF-REL-002`, `REQ-NF-REL-003`, `REQ-NF-REL-004`, `REQ-NF-REL-007`, `REQ-NF-SEC-001`, `REQ-NF-SEC-011`, `REQ-NF-USA-001`, `REQ-NF-USA-002`, `REQ-NF-USA-003`, `REQ-NF-USA-004`.
 
 Yang sudah terukur sejauh ini: ukuran berkas awal 115 kB terkompresi
-(REQ-NF-PRF-003) dan cakupan uji otomatis 166 uji dengan 731 asersi pada logika
-bisnis inti (REQ-NF-MNT-001). Sisanya menunggu lingkungan setara produksi,
+(REQ-NF-PRF-003) dan cakupan uji otomatis 180 uji dengan 804 asersi pada logika
+bisnis inti (REQ-NF-MNT-001), dijalankan pada SQLite maupun PostgreSQL. Sisanya menunggu lingkungan setara produksi,
 uji beban, uji penetrasi, dan uji penerimaan bersama perangkat desa.
 
 ### 4.4 Tidak berlaku pada arsitektur ini

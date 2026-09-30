@@ -11,6 +11,7 @@ import { GalatMuat, KondisiKosong, Rangka } from '@/components/ui/Status'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
 import { HakDataPribadi } from '@/pages/warga/HakDataPribadi'
 import { PreferensiNotifikasi } from '@/pages/warga/PreferensiNotifikasi'
+import { RiwayatMasuk } from '@/pages/warga/RiwayatMasuk'
 import type { Halaman, Permohonan } from '@/types'
 
 export function Akun() {
@@ -129,6 +130,8 @@ export function Akun() {
           </ul>
         )}
       </Kartu>
+
+      <RiwayatMasuk />
 
       <PreferensiNotifikasi />
 

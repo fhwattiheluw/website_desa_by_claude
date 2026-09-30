@@ -66,6 +66,22 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(20)->by('masuk-ip:'.$request->ip()),
         ]);
 
+        /*
+         * Verifikasi kode masuk memakai pembatas tersendiri, bukan pembatas
+         * `masuk` (REQ-F-USR-009). Permintaan ini tidak membawa alamat surel,
+         * sehingga bila memakai pembatas yang sama seluruh petugas akan berbagi
+         * satu kuota — lima percobaan per menit untuk sekantor, dan petugas
+         * kedua yang masuk pada menit yang sama akan tertolak.
+         *
+         * Kuncinya tantangan masing-masing: kekeliruan satu orang tidak pernah
+         * menjegal yang lain. Batas percobaan sesungguhnya ada pada OtpService;
+         * yang di sini hanya penahan banjir permintaan.
+         */
+        RateLimiter::for('otp', fn (Request $request) => [
+            Limit::perMinute(10)->by('otp-tantangan:'.$request->input('tantangan')),
+            Limit::perMinute(30)->by('otp-ip:'.$request->ip()),
+        ]);
+
         RateLimiter::for('registrasi', fn (Request $request) => Limit::perHour(5)->by($request->ip()));
 
         RateLimiter::for('pemulihan', fn (Request $request) => [

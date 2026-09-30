@@ -187,6 +187,40 @@ maksimal 4 jam per bulan (REQ-NF-REL-002).
 - **Jalankan ulang cache** setiap kali `.env` berubah, sebab konfigurasi yang
   ter-cache tidak membaca berkas `.env` lagi.
 
+## 5.1 Pemindai berkas unggahan
+
+Unggahan sudah melewati pemeriksaan tipe asli dan penolakan berkas berisi skrip
+di dalam aplikasi. Lapisan terakhir, pemindaian perangkat perusak, memerlukan
+daemon di luar aplikasi dan karena itu harus disiapkan saat pemasangan
+(REQ-NF-SEC-008).
+
+```bash
+apt-get install clamav-daemon
+systemctl enable --now clamav-daemon
+freshclam                      # unduh basis data tanda tangan pertama kali
+```
+
+Lalu pada `.env`:
+
+```
+PEMINDAI_DRIVER=clamav
+CLAMAV_ALAMAT=unix:///var/run/clamav/clamd.ctl
+```
+
+Yang perlu diketahui operator:
+
+- **Tanpa pengaturan ini pemindaian dilewati.** Nilai bawaan `nihil` membuat
+  unggahan hanya bersandar pada lapisan di dalam aplikasi. Itu pilihan sadar
+  agar pemasangan sederhana tetap berjalan, bukan keadaan yang dianggap aman.
+- **Pemindai gagal berarti unggahan ditolak,** bukan diterima diam-diam. Bila
+  daemon mati, warga akan melihat pesan bahwa berkas tidak dapat diperiksa.
+  Periksa `systemctl status clamav-daemon` sebelum menyalahkan pengunggah.
+- **Pengguna aplikasi web harus dapat membaca soket clamd.** Lazimnya dengan
+  menambahkan pengguna itu ke grup `clamav`.
+- **`freshclam` berjalan sebagai layanan tersendiri.** Basis tanda tangan yang
+  usang membuat pemindaian tampak bekerja padahal tidak lagi mengenali ancaman
+  baru.
+
 ## 6. Kebijakan retensi data
 
 Retensi dijalankan otomatis oleh penjadwal (REQ-NF-CMP-004). Administrator tidak

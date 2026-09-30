@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { ambilToken, api, simpanToken } from '@/lib/api'
-import { KonteksAutentikasi } from '@/lib/auth'
+import { KonteksAutentikasi, type HasilMasuk } from '@/lib/auth'
 import type { Pengguna } from '@/types'
+
+interface JawabanMasuk {
+  perlu_otp?: boolean
+  tantangan?: string
+  tujuan?: string
+  kedaluwarsa?: string
+  token?: string
+  pengguna?: Pengguna
+}
 
 export function PenyediaAuth({ children }: { children: ReactNode }) {
   const [pengguna, setPengguna] = useState<Pengguna | null>(null)
@@ -52,8 +61,28 @@ export function PenyediaAuth({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const masuk = useCallback(async (email: string, password: string) => {
-    const { data } = await api.post<{ token: string; pengguna: Pengguna }>('/auth/masuk', { email, password })
+  const masuk = useCallback(async (email: string, password: string): Promise<HasilMasuk> => {
+    const { data, status } = await api.post<JawabanMasuk>('/auth/masuk', { email, password })
+
+    // 202 berarti kata sandi benar tetapi sesi belum terbit: peran ini wajib
+    // melewati kode masuk lebih dahulu (REQ-F-USR-009).
+    if (status === 202 && data.perlu_otp) {
+      return {
+        perluOtp: true,
+        tantangan: data.tantangan!,
+        tujuan: data.tujuan!,
+        kedaluwarsa: data.kedaluwarsa!,
+      }
+    }
+
+    simpanToken(data.token!)
+    setPengguna(data.pengguna!)
+
+    return { perluOtp: false, pengguna: data.pengguna! }
+  }, [])
+
+  const verifikasiOtp = useCallback(async (tantangan: string, kode: string) => {
+    const { data } = await api.post<{ token: string; pengguna: Pengguna }>('/auth/otp', { tantangan, kode })
     simpanToken(data.token)
     setPengguna(data.pengguna)
 
@@ -79,8 +108,8 @@ export function PenyediaAuth({ children }: { children: ReactNode }) {
   )
 
   const nilai = useMemo(
-    () => ({ pengguna, memuat, masuk, keluar, segarkan, punyaIzin }),
-    [pengguna, memuat, masuk, keluar, segarkan, punyaIzin],
+    () => ({ pengguna, memuat, masuk, verifikasiOtp, keluar, segarkan, punyaIzin }),
+    [pengguna, memuat, masuk, verifikasiOtp, keluar, segarkan, punyaIzin],
   )
 
   return <KonteksAutentikasi.Provider value={nilai}>{children}</KonteksAutentikasi.Provider>

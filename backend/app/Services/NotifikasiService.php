@@ -148,6 +148,7 @@ class NotifikasiService
             'pengaduan_diterima' => 'Pengaduan Anda telah diterima',
             'pengaduan_ditanggapi' => 'Pengaduan Anda telah ditanggapi',
             'insiden_keamanan' => 'PENTING: indikasi insiden keamanan pada portal desa',
+            'kode_masuk' => 'Kode masuk panel petugas desa',
             default => 'Pemberitahuan layanan desa',
         };
     }
@@ -167,6 +168,10 @@ class NotifikasiService
                 .'Abaikan pesan ini bila Anda tidak merasa mengajukan permintaan tersebut.',
             'verifikasi_surel' => 'Silakan verifikasi alamat surel Anda dengan membuka tautan berikut '
                 ."(berlaku {$data['berlaku_jam']} jam):\n{$data['tautan']}",
+            // REQ-F-USR-009: kode sekali pakai bagi peran berwenang.
+            'kode_masuk' => "Kode masuk Anda: {$data['kode']}\n\n"
+                ."Kode ini berlaku {$data['berlaku_menit']} menit dan hanya dapat dipakai sekali.\n\n"
+                .'Bila Anda tidak sedang mencoba masuk, segera ubah kata sandi Anda dan beri tahu administrator desa.',
             // REQ-NF-CMP-005: peringatan dini agar tenggat pelaporan 3x24 jam
             // masih dapat dipenuhi.
             'insiden_keamanan' => "Sistem mendeteksi pola yang perlu segera diperiksa: {$data['keterangan']}.\n\n"

@@ -1,14 +1,17 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { AlertTriangle, Search } from 'lucide-react'
-import { api, pesanGalat } from '@/lib/api'
+import { AlertTriangle, Download, Search } from 'lucide-react'
+import { api, pesanGalat, unduhDenganMuatan } from '@/lib/api'
+import { useAuth } from '@/lib/auth'
 import { useLayanan } from '@/lib/kueri'
 import { tanggal } from '@/lib/format'
 import { Kartu, IsiKartu } from '@/components/ui/Kartu'
 import { Isian, Pilihan } from '@/components/ui/Isian'
 import { Lencana, LencanaPermohonan } from '@/components/ui/Lencana'
 import { Paginasi } from '@/components/ui/Paginasi'
+import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import { Tombol } from '@/components/ui/Tombol'
 import { GalatMuat, KondisiKosong, Rangka } from '@/components/ui/Status'
 import type { Halaman, Permohonan } from '@/types'
 
@@ -16,12 +19,24 @@ const STATUS = [
   'diajukan', 'diverifikasi', 'disetujui', 'ditandatangani', 'selesai', 'dikembalikan', 'ditolak',
 ]
 
+/** Batas ini sama dengan batas yang ditegakkan server (REQ-F-SRT-023). */
+const MAKS_UNDUHAN = 50
+
+/** Hanya surat yang sah yang dapat diarsipkan; surat batal tidak boleh beredar. */
+function dapatDiunduh(permohonan: Permohonan): boolean {
+  return permohonan.surat?.status_keabsahan === 'sah'
+}
+
 /** REQ-F-SRT-019, 020: antrean kerja terurut tenggat dengan penanda keterlambatan. */
 export function AntreanPermohonan() {
   const [parameter, setParameter] = useSearchParams()
   const [halaman, setHalaman] = useState(1)
   const [q, setQ] = useState('')
+  const [terpilih, setTerpilih] = useState<number[]>([])
+  const [mengunduh, setMengunduh] = useState(false)
+  const [galatUnduh, setGalatUnduh] = useState('')
   const { data: layanan } = useLayanan()
+  const { punyaIzin } = useAuth()
 
   const status = parameter.get('status') ?? ''
   const kodeLayanan = parameter.get('layanan') ?? ''
@@ -49,6 +64,40 @@ export function AntreanPermohonan() {
     else baru.delete(kunci)
     setParameter(baru)
     setHalaman(1)
+  }
+
+  const bolehMengunduh = punyaIzin('permohonan.lihat')
+  const dapatDipilih = (data?.data ?? []).filter(dapatDiunduh)
+  const semuaTerpilih = dapatDipilih.length > 0 && dapatDipilih.every((p) => terpilih.includes(p.id))
+
+  const ubahPilihan = (id: number) =>
+    setTerpilih((sebelum) =>
+      sebelum.includes(id) ? sebelum.filter((satu) => satu !== id) : [...sebelum, id],
+    )
+
+  const ubahSemua = () =>
+    setTerpilih((sebelum) => {
+      const idHalaman = dapatDipilih.map((p) => p.id)
+
+      return semuaTerpilih
+        ? sebelum.filter((satu) => !idHalaman.includes(satu))
+        : [...new Set([...sebelum, ...idHalaman])]
+    })
+
+  const unduhTerpilih = async () => {
+    setMengunduh(true)
+    setGalatUnduh('')
+
+    try {
+      const berkas = `surat-terbit-${new Date().toISOString().slice(0, 10)}.zip`
+
+      await unduhDenganMuatan('/admin/permohonan/unduh-massal', { permohonan: terpilih }, berkas)
+      setTerpilih([])
+    } catch (kesalahan) {
+      setGalatUnduh(pesanGalat(kesalahan))
+    } finally {
+      setMengunduh(false)
+    }
   }
 
   return (
@@ -115,12 +164,51 @@ export function AntreanPermohonan() {
         />
       ) : (
         <>
+          {bolehMengunduh && terpilih.length > 0 && (
+            <Kartu>
+              <IsiKartu className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-slate-700">
+                  <span className="font-medium">{terpilih.length}</span> surat dipilih
+                  {terpilih.length > MAKS_UNDUHAN && (
+                    <span className="text-red-700"> — maksimal {MAKS_UNDUHAN} surat sekali unduh.</span>
+                  )}
+                </p>
+                <div className="flex gap-2">
+                  <Tombol ragam="garis" onClick={() => setTerpilih([])}>
+                    Batalkan pilihan
+                  </Tombol>
+                  <Tombol
+                    onClick={() => void unduhTerpilih()}
+                    memuat={mengunduh}
+                    disabled={terpilih.length > MAKS_UNDUHAN}
+                  >
+                    <Download aria-hidden className="size-4" /> Unduh ZIP
+                  </Tombol>
+                </div>
+              </IsiKartu>
+            </Kartu>
+          )}
+
+          {galatUnduh && <Pemberitahuan jenis="bahaya">{galatUnduh}</Pemberitahuan>}
+
           <Kartu>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <caption className="sr-only">Daftar permohonan layanan</caption>
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50 text-left text-slate-600">
+                    {bolehMengunduh && (
+                      <th scope="col" className="w-10 px-4 py-3">
+                        <input
+                          type="checkbox"
+                          className="size-4 rounded border-slate-300 text-desa-700 focus:ring-desa-600"
+                          checked={semuaTerpilih}
+                          disabled={dapatDipilih.length === 0}
+                          onChange={ubahSemua}
+                          aria-label="Pilih seluruh surat terbit pada halaman ini"
+                        />
+                      </th>
+                    )}
                     <th scope="col" className="px-4 py-3 font-medium">Nomor tiket</th>
                     <th scope="col" className="px-4 py-3 font-medium">Pemohon</th>
                     <th scope="col" className="px-4 py-3 font-medium">Layanan</th>
@@ -131,6 +219,22 @@ export function AntreanPermohonan() {
                 <tbody>
                   {data.data.map((permohonan) => (
                     <tr key={permohonan.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                      {bolehMengunduh && (
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            className="size-4 rounded border-slate-300 text-desa-700 focus:ring-desa-600 disabled:opacity-40"
+                            checked={terpilih.includes(permohonan.id)}
+                            disabled={!dapatDiunduh(permohonan)}
+                            onChange={() => ubahPilihan(permohonan.id)}
+                            aria-label={
+                              dapatDiunduh(permohonan)
+                                ? `Pilih surat ${permohonan.nomor_tiket}`
+                                : `${permohonan.nomor_tiket} belum memiliki surat terbit`
+                            }
+                          />
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <Link
                           to={`/admin/permohonan/${permohonan.id}`}

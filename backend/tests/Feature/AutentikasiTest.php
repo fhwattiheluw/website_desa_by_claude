@@ -115,20 +115,23 @@ class AutentikasiTest extends TestCase
         foreach (['operator', 'verifikator', 'sekdes', 'kades', 'admin'] as $peran) {
             $petugas = $this->buatPengguna($peran);
 
+            // Peran berwenang menerima 202 karena masih menunggu kode masuk
+            // (REQ-F-USR-009); yang penting di sini tidak ada yang terjegal
+            // pembatas laju per alamat IP.
             $this->postJson('/api/v1/auth/masuk', ['email' => $petugas->email, 'password' => 'password'])
-                ->assertOk();
+                ->assertSuccessful();
         }
     }
 
     public function test_masuk_berhasil_mengembalikan_token_dan_daftar_izin(): void
     {
-        $sekdes = $this->buatPengguna('sekdes');
+        $operator = $this->buatPengguna('operator');
 
-        $respons = $this->postJson('/api/v1/auth/masuk', ['email' => $sekdes->email, 'password' => 'password'])
+        $respons = $this->postJson('/api/v1/auth/masuk', ['email' => $operator->email, 'password' => 'password'])
             ->assertOk()
             ->assertJsonStructure(['token', 'kedaluwarsa', 'pengguna' => ['izin']]);
 
-        $this->assertContains('permohonan.setujui', $respons->json('pengguna.izin'));
+        $this->assertContains('permohonan.verifikasi', $respons->json('pengguna.izin'));
     }
 
     public function test_akun_nonaktif_tidak_dapat_masuk(): void
@@ -143,5 +146,40 @@ class AutentikasiTest extends TestCase
     {
         $this->getJson('/api/v1/auth/saya')->assertUnauthorized();
         $this->getJson('/api/v1/admin/dashboard')->assertUnauthorized();
+    }
+
+    /**
+     * REQ-F-USR-015: riwayat masuk harus memperlihatkan upaya yang gagal.
+     *
+     * Justru upaya gagal yang membuat fitur ini berguna. Saat upaya itu
+     * dicatat belum ada sesi, sehingga riwayat tidak boleh disaring dengan
+     * kolom pelaku.
+     */
+    public function test_riwayat_masuk_memuat_upaya_gagal(): void
+    {
+        $warga = $this->buatWarga(['email' => 'siti@contoh.id']);
+
+        $this->postJson('/api/v1/auth/masuk', ['email' => 'siti@contoh.id', 'password' => 'keliru'])
+            ->assertUnprocessable();
+
+        $jawab = $this->actingAs($warga)->getJson('/api/v1/auth/riwayat-masuk')->assertOk();
+
+        $this->assertCount(1, $jawab->json('data'));
+        $this->assertFalse($jawab->json('data.0.berhasil'));
+    }
+
+    /** REQ-F-USR-015: riwayat hanya memuat upaya pada akun sendiri. */
+    public function test_riwayat_masuk_tidak_membocorkan_akun_lain(): void
+    {
+        $warga = $this->buatWarga(['email' => 'siti@contoh.id']);
+        $lain = $this->buatWarga(['email' => 'budi@contoh.id']);
+
+        $this->postJson('/api/v1/auth/masuk', ['email' => 'budi@contoh.id', 'password' => 'keliru'])
+            ->assertUnprocessable();
+
+        $jawab = $this->actingAs($warga)->getJson('/api/v1/auth/riwayat-masuk')->assertOk();
+
+        $this->assertSame([], $jawab->json('data'));
+        $this->assertNotNull($lain->id);
     }
 }

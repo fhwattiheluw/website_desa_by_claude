@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Permohonan;
+use App\Models\Role;
 use App\Models\SuratTerbit;
 use App\Models\User;
 use App\Services\SuratService;
@@ -269,5 +270,49 @@ class PermohonanSuratTest extends TestCase
             ->postJson("/api/v1/admin/permohonan/{$permohonan->id}/tanda-tangani")->assertOk();
 
         return $permohonan->fresh('surat');
+    }
+
+    /** REQ-F-SRT-023: pengunduhan massal surat yang telah terbit. */
+    public function test_unduh_massal_membentuk_arsip_berisi_surat_terpilih(): void
+    {
+        $satu = $this->prosesSampaiSelesai($this->buatWarga());
+        $dua = $this->prosesSampaiSelesai($this->buatWarga());
+
+        $jawab = $this->actingAs($this->buatPengguna(Role::OPERATOR))
+            ->post('/api/v1/admin/permohonan/unduh-massal', [
+                'permohonan' => [$satu->id, $dua->id],
+            ])->assertOk();
+
+        $berkas = tempnam(sys_get_temp_dir(), 'uji');
+        file_put_contents($berkas, $jawab->streamedContent());
+
+        $arsip = new \ZipArchive;
+        $this->assertTrue($arsip->open($berkas) === true);
+        $this->assertSame(2, $arsip->numFiles);
+        $this->assertStringStartsWith('%PDF', (string) $arsip->getFromIndex(0));
+        $arsip->close();
+        unlink($berkas);
+
+        $this->assertDatabaseHas('audit_log', ['aksi' => 'unduh_massal_surat']);
+    }
+
+    /** Surat yang dibatalkan tidak boleh ikut terarsip (REQ-F-SRT-023). */
+    public function test_unduh_massal_menolak_permohonan_tanpa_surat_sah(): void
+    {
+        $tanpaSurat = $this->ajukan($this->buatWarga());
+
+        $this->actingAs($this->buatPengguna(Role::OPERATOR))
+            ->post('/api/v1/admin/permohonan/unduh-massal', ['permohonan' => [$tanpaSurat->id]])
+            ->assertStatus(422);
+    }
+
+    /** Warga tidak boleh mengunduh berkas permohonan orang lain (REQ-NF-SEC-004). */
+    public function test_unduh_massal_tertutup_bagi_warga(): void
+    {
+        $permohonan = $this->prosesSampaiSelesai($this->buatWarga());
+
+        $this->actingAs($this->buatWarga())
+            ->postJson('/api/v1/admin/permohonan/unduh-massal', ['permohonan' => [$permohonan->id]])
+            ->assertForbidden();
     }
 }

@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Media;
 use App\Models\User;
+use App\Services\Pemindai\ManajerPemindai;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -31,7 +33,10 @@ class MediaService
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ];
 
-    public function __construct(private readonly AuditLogger $audit) {}
+    public function __construct(
+        private readonly AuditLogger $audit,
+        private readonly ManajerPemindai $pemindai,
+    ) {}
 
     public function simpan(
         UploadedFile $berkas,
@@ -44,6 +49,7 @@ class MediaService
         $gambar = in_array($mime, self::MIME_GAMBAR, true);
 
         $this->pastikanAman($berkas, $mime, $gambar);
+        $this->pastikanBebasPerangkatPerusak($berkas);
 
         $disk = $privat ? 'local' : 'public';
         $nama = Str::uuid()->toString().'.'.$this->ekstensi($mime);
@@ -138,6 +144,48 @@ class MediaService
                 'berkas' => 'Berkas ditolak karena memuat konten yang dapat dieksekusi.',
             ]);
         }
+    }
+
+    /**
+     * Pemindaian perangkat lunak berbahaya sebelum berkas disimpan permanen
+     * (REQ-NF-SEC-008).
+     *
+     * Lampiran warga memuat identitas dan dibuka petugas desa, sehingga berkas
+     * berbahaya yang lolos berdampak langsung pada komputer kantor desa.
+     */
+    private function pastikanBebasPerangkatPerusak(UploadedFile $berkas): void
+    {
+        $pemindai = $this->pemindai->aktif();
+
+        if (! $pemindai->aktif()) {
+            return;
+        }
+
+        try {
+            $hasil = $pemindai->pindai($berkas);
+        } catch (\Throwable $galat) {
+            Log::error('Pemindaian berkas gagal dijalankan.', ['galat' => $galat->getMessage()]);
+
+            throw ValidationException::withMessages([
+                'berkas' => 'Berkas belum dapat diperiksa keamanannya. Coba lagi beberapa saat lagi.',
+            ]);
+        }
+
+        if ($hasil->bersih) {
+            return;
+        }
+
+        // Percobaan unggah berkas berbahaya adalah peristiwa keamanan, bukan
+        // sekadar galat validasi, sehingga dicatat pada jejak audit.
+        $this->audit->catat('unggahan_ditolak_pemindai', 'Media', null, null, [
+            'pemindai' => $hasil->pemindai,
+            'temuan' => $hasil->temuan,
+            'nama_berkas' => $berkas->getClientOriginalName(),
+        ]);
+
+        throw ValidationException::withMessages([
+            'berkas' => 'Berkas ditolak karena terdeteksi mengandung perangkat lunak berbahaya.',
+        ]);
     }
 
     private function ekstensi(string $mime): string

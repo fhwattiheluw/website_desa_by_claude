@@ -94,6 +94,8 @@ Route::prefix('v1')->group(function () {
     /* ------------------------------------------------------------ Autentikasi */
     Route::post('auth/daftar', [AuthController::class, 'daftar'])->middleware('throttle:registrasi');
     Route::post('auth/masuk', [AuthController::class, 'masuk'])->middleware('throttle:masuk');
+    // REQ-F-USR-009: langkah kedua bagi peran berwenang.
+    Route::post('auth/otp', [AuthController::class, 'verifikasiOtp'])->middleware('throttle:otp');
 
     // Pemulihan kata sandi dan verifikasi kepemilikan surel (REQ-F-USR-002, 006).
     Route::post('auth/lupa-kata-sandi', [KataSandiController::class, 'kirimTautan'])->middleware('throttle:pemulihan');
@@ -114,6 +116,8 @@ Route::prefix('v1')->group(function () {
         Route::get('auth/saya', [AuthController::class, 'saya']);
         Route::put('auth/profil', [AuthController::class, 'perbaruiProfil']);
         Route::put('auth/kata-sandi', [AuthController::class, 'ubahKataSandi']);
+        // REQ-F-USR-015: riwayat masuk pemilik akun.
+        Route::get('auth/riwayat-masuk', [AuthController::class, 'riwayatMasuk']);
 
         // Hak subjek data: salinan data pribadi dan permintaan penghapusan
         // (REQ-F-USR-013).
@@ -150,6 +154,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [Admin\PermohonanController::class, 'index'])->middleware('izin:permohonan.lihat');
             Route::get('laporan', [Admin\PermohonanController::class, 'laporan'])->middleware('izin:laporan.lihat');
             Route::get('laporan/csv', [Admin\PermohonanController::class, 'eksporCsv'])->middleware('izin:laporan.lihat');
+            // REQ-F-SRT-023: pengunduhan massal surat yang telah terbit.
+            Route::post('unduh-massal', [Admin\PermohonanController::class, 'unduhMassal'])
+                ->middleware('izin:permohonan.lihat');
             Route::post('loket', [Admin\PermohonanController::class, 'buatkan'])->middleware('izin:permohonan.buat_loket');
             Route::get('{permohonan}', [Admin\PermohonanController::class, 'show'])->middleware('izin:permohonan.lihat');
             Route::post('{permohonan}/verifikasi', [Admin\PermohonanController::class, 'verifikasi'])->middleware('izin:permohonan.verifikasi');

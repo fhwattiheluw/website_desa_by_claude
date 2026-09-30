@@ -182,6 +182,56 @@ class PermohonanController extends Controller
      * Kolom identitas sengaja dibatasi agar berkas laporan tidak menjadi
      * salinan data pribadi yang beredar bebas (REQ-NF-CMP-002).
      */
+    /**
+     * Pengunduhan massal surat yang telah terbit (REQ-F-SRT-023).
+     *
+     * Berkas digabung menjadi satu arsip ZIP alih-alih PDF tunggal: petugas
+     * biasanya perlu menyerahkan masing-masing surat kepada pemohon yang
+     * berbeda, sehingga menggabungkannya jadi satu dokumen justru menyulitkan.
+     */
+    public function unduhMassal(Request $request, SuratService $suratService): StreamedResponse
+    {
+        $data = $request->validate([
+            'permohonan' => ['required', 'array', 'min:1', 'max:50'],
+            'permohonan.*' => ['integer'],
+        ]);
+
+        $permohonan = Permohonan::with('surat', 'jenisLayanan')
+            ->whereIn('id', $data['permohonan'])
+            ->whereHas('surat', fn ($q) => $q->where('status_keabsahan', 'sah'))
+            ->get();
+
+        abort_if($permohonan->isEmpty(), 422, 'Tidak ada surat sah pada permohonan yang dipilih.');
+
+        /*
+         * Pengunduhan massal memindahkan banyak data pribadi sekaligus, jadi
+         * dicatat sama seperti ekspor laporan (REQ-NF-CMP-005).
+         */
+        $this->audit->catat('unduh_massal_surat', 'Permohonan', null, null, [
+            'jumlah' => $permohonan->count(),
+            'nomor_surat' => $permohonan->pluck('surat.nomor_surat')->all(),
+        ]);
+
+        $nama = 'surat-terbit-'.now()->format('Ymd-His').'.zip';
+
+        return response()->streamDownload(function () use ($permohonan, $suratService) {
+            $sementara = tempnam(sys_get_temp_dir(), 'sidesa');
+            $arsip = new \ZipArchive;
+            $arsip->open($sementara, \ZipArchive::OVERWRITE | \ZipArchive::CREATE);
+
+            foreach ($permohonan as $satu) {
+                $arsip->addFromString(
+                    str($satu->surat->nomor_surat)->slug().'.pdf',
+                    $suratService->isiBerkas($satu->surat),
+                );
+            }
+
+            $arsip->close();
+            readfile($sementara);
+            unlink($sementara);
+        }, $nama, ['Content-Type' => 'application/zip']);
+    }
+
     public function eksporCsv(Request $request): StreamedResponse
     {
         $dari = $request->date('dari') ?? now()->startOfMonth();

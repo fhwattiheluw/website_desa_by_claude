@@ -7,15 +7,19 @@ import { Kartu, IsiKartu } from '@/components/ui/Kartu'
 import { Isian } from '@/components/ui/Isian'
 import { Tombol } from '@/components/ui/Tombol'
 import { Pemberitahuan } from '@/components/ui/Pemberitahuan'
+import type { Pengguna } from '@/types'
 
 export function Masuk() {
-  const { masuk } = useAuth()
+  const { masuk, verifikasiOtp } = useAuth()
   const navigasi = useNavigate()
   const lokasi = useLocation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [galat, setGalat] = useState('')
   const [memuat, setMemuat] = useState(false)
+  // Tantangan kode masuk bagi peran berwenang (REQ-F-USR-009).
+  const [tantangan, setTantangan] = useState<{ tantangan: string; tujuan: string } | null>(null)
+  const [kode, setKode] = useState('')
 
   const [parameter] = useSearchParams()
   const statusVerifikasi = parameter.get('verifikasi')
@@ -33,21 +37,46 @@ export function Masuk() {
     setGalat('')
 
     try {
-      const pengguna = await masuk(email, password)
+      const hasil = await masuk(email, password)
 
-      // Tujuan yang tersimpan hanya dipakai bila sesuai dengan peran yang masuk,
-      // sehingga sisa pengalihan sebelumnya tidak menyesatkan pengguna.
-      const keDalamPanel = tujuan?.startsWith('/admin') ?? false
-      const tujuanAkhir = pengguna.petugas
-        ? (keDalamPanel ? (tujuan as string) : '/admin')
-        : (tujuan && !keDalamPanel ? tujuan : '/akun')
+      if (hasil.perluOtp) {
+        setTantangan({ tantangan: hasil.tantangan, tujuan: hasil.tujuan })
 
-      navigasi(tujuanAkhir, { replace: true })
+        return
+      }
+
+      lanjutkan(hasil.pengguna)
     } catch (kesalahan) {
       setGalat(pesanGalat(kesalahan))
     } finally {
       setMemuat(false)
     }
+  }
+
+  const kirimKode = async (peristiwa: FormEvent) => {
+    peristiwa.preventDefault()
+    setMemuat(true)
+    setGalat('')
+
+    try {
+      lanjutkan(await verifikasiOtp(tantangan!.tantangan, kode))
+    } catch (kesalahan) {
+      setGalat(pesanGalat(kesalahan))
+      setKode('')
+    } finally {
+      setMemuat(false)
+    }
+  }
+
+  function lanjutkan(pengguna: Pengguna) {
+    // Tujuan yang tersimpan hanya dipakai bila sesuai dengan peran yang masuk,
+    // sehingga sisa pengalihan sebelumnya tidak menyesatkan pengguna.
+    const keDalamPanel = tujuan?.startsWith('/admin') ?? false
+    const tujuanAkhir = pengguna.petugas
+      ? (keDalamPanel ? (tujuan as string) : '/admin')
+      : (tujuan && !keDalamPanel ? tujuan : '/akun')
+
+    navigasi(tujuanAkhir, { replace: true })
   }
 
   return (
@@ -82,40 +111,79 @@ export function Masuk() {
             </div>
           )}
 
-          <form onSubmit={kirim} className="space-y-4">
-            <Isian
-              label="Surel"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Isian
-              label="Kata sandi"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Tombol type="submit" ukuran="besar" memuat={memuat} className="w-full">
-              Masuk
-            </Tombol>
-          </form>
+          {tantangan ? (
+            <form onSubmit={kirimKode} className="space-y-4">
+              <p className="text-sm text-slate-600">
+                Kode masuk sekali pakai telah dikirim ke{' '}
+                <span className="font-medium text-slate-900">{tantangan.tujuan}</span>. Kode berlaku 10 menit.
+              </p>
+              <Isian
+                label="Kode masuk"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength={6}
+                required
+                autoFocus
+                value={kode}
+                onChange={(e) => setKode(e.target.value.replace(/\D/g, ''))}
+                petunjuk="Enam angka tanpa spasi."
+              />
+              <Tombol type="submit" ukuran="besar" memuat={memuat} className="w-full">
+                Lanjutkan
+              </Tombol>
+              <Tombol
+                type="button"
+                ragam="garis"
+                className="w-full"
+                onClick={() => {
+                  setTantangan(null)
+                  setKode('')
+                  setPassword('')
+                  setGalat('')
+                }}
+              >
+                Batal
+              </Tombol>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={kirim} className="space-y-4">
+                <Isian
+                  label="Surel"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Isian
+                  label="Kata sandi"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <Tombol type="submit" ukuran="besar" memuat={memuat} className="w-full">
+                  Masuk
+                </Tombol>
+              </form>
 
-          <p className="mt-4 text-center text-sm">
-            <Link to="/lupa-kata-sandi" className="font-medium text-desa-700 hover:underline">
-              Lupa kata sandi?
-            </Link>
-          </p>
+              <p className="mt-4 text-center text-sm">
+                <Link to="/lupa-kata-sandi" className="font-medium text-desa-700 hover:underline">
+                  Lupa kata sandi?
+                </Link>
+              </p>
 
-          <p className="mt-3 text-center text-sm text-slate-600">
-            Belum punya akun?{' '}
-            <Link to="/daftar" className="font-medium text-desa-700 hover:underline">
-              Daftar sebagai warga
-            </Link>
-          </p>
+              <p className="mt-3 text-center text-sm text-slate-600">
+                Belum punya akun?{' '}
+                <Link to="/daftar" className="font-medium text-desa-700 hover:underline">
+                  Daftar sebagai warga
+                </Link>
+              </p>
+            </>
+          )}
         </IsiKartu>
       </Kartu>
 

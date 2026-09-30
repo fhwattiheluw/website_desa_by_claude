@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -26,6 +28,7 @@ class AuthController extends Controller
     public function __construct(
         private readonly AuditLogger $audit,
         private readonly VerifikasiSurelController $verifikasiSurel,
+        private readonly OtpService $otp,
     ) {}
 
     public function daftar(Request $request): JsonResponse
@@ -114,8 +117,40 @@ class AuthController extends Controller
         $pengguna->forceFill([
             'gagal_masuk' => 0,
             'terkunci_sampai' => null,
-            'last_login_at' => now(),
         ])->save();
+
+        /*
+         * REQ-F-USR-009: peran berwenang belum memperoleh sesi pada langkah
+         * ini. Kata sandi yang benar hanya membuka tantangan kedua; token baru
+         * terbit setelah kodenya cocok.
+         */
+        if ($this->otp->wajibBagi($pengguna)) {
+            $this->audit->catat('login_menunggu_otp', 'User', $pengguna->id);
+
+            return response()->json([
+                'perlu_otp' => true,
+                'pesan' => 'Kode masuk telah dikirim ke surel Anda. Masukkan kode itu untuk melanjutkan.',
+                ...$this->otp->mulai($pengguna),
+            ], 202);
+        }
+
+        return $this->terbitkanSesi($pengguna);
+    }
+
+    /** REQ-F-USR-009: langkah kedua bagi peran yang mewajibkannya. */
+    public function verifikasiOtp(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'tantangan' => ['required', 'string'],
+            'kode' => ['required', 'string', 'digits:6'],
+        ]);
+
+        return $this->terbitkanSesi($this->otp->periksa($data['tantangan'], $data['kode']));
+    }
+
+    private function terbitkanSesi(User $pengguna): JsonResponse
+    {
+        $pengguna->forceFill(['last_login_at' => now()])->save();
 
         // REQ-F-USR-008: masa berlaku sesi petugas lebih pendek daripada warga.
         $kedaluwarsa = $pengguna->petugas() ? now()->addMinutes(30) : now()->addDays(7);
@@ -141,6 +176,42 @@ class AuthController extends Controller
     public function saya(Request $request): JsonResponse
     {
         return response()->json(['pengguna' => $this->profil($request->user()->load('role.permissions'))]);
+    }
+
+    /**
+     * Riwayat masuk pemilik akun (REQ-F-USR-015).
+     *
+     * Dibaca dari jejak audit yang sudah mencatat setiap upaya masuk, bukan
+     * dari tabel baru: satu sumber kebenaran membuat riwayat yang dilihat warga
+     * tidak mungkin berbeda dari yang dilihat petugas.
+     *
+     * Penyaringnya `entitas`/`entitas_id`, bukan `aktor_id`. Pada saat upaya
+     * masuk dicatat belum ada sesi yang aktif, sehingga `aktor_id` selalu
+     * kosong — termasuk pada upaya yang berhasil. Menyaring dengan kolom itu
+     * membuat riwayat selalu kosong, justru pada upaya gagal yang paling perlu
+     * dilihat pemilik akun.
+     */
+    public function riwayatMasuk(Request $request): JsonResponse
+    {
+        $riwayat = AuditLog::where('entitas', 'User')
+            ->where('entitas_id', (string) $request->user()->id)
+            ->whereIn('aksi', ['login', 'login_gagal', 'otp_gagal'])
+            ->latest('created_at')
+            ->limit(20)
+            ->get()
+            ->map(fn (AuditLog $baris) => [
+                'berhasil' => $baris->aksi === 'login',
+                'aksi' => $baris->aksi,
+                'waktu' => $baris->created_at?->toIso8601String(),
+                'alamat_ip' => $baris->alamat_ip,
+                'agen' => $baris->agen,
+            ]);
+
+        return response()->json([
+            'data' => $riwayat,
+            'catatan' => 'Bila ada upaya masuk yang tidak Anda kenali, segera ubah kata sandi dan '
+                .'beri tahu petugas desa.',
+        ]);
     }
 
     /** REQ-F-USR-013: pengguna dapat memutakhirkan data pribadinya sendiri. */
